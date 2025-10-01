@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -62,22 +63,29 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <Stack.Screen 
         options={{ 
           headerShown: false,
         }} 
       />
       
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop' }}
+        style={[styles.backgroundImage, { paddingTop: insets.top }]}
+        resizeMode="cover"
       >
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
-          showsVerticalScrollIndicator={false}
+        <View style={styles.overlay} />
+        
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
+          <ScrollView 
+            contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
             <View style={styles.logoContainer}>
               <ChurchLogo size={isDesktop ? 120 : 100} />
               <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
@@ -159,9 +167,10 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </View>
   );
 }
@@ -169,7 +178,16 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#000000',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   keyboardView: {
     flex: 1,
@@ -188,19 +206,33 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   contentWrapperDesktop: {
-    maxWidth: 440,
+    maxWidth: 480,
     alignSelf: 'center',
     width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 20,
+    padding: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111827',
-    marginTop: 24,
+    color: '#1F2937',
+    marginTop: 20,
   },
   titleDesktop: {
     fontSize: 32,
@@ -217,9 +249,22 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
   },
   formContainerDesktop: {
     width: '100%',
+    backgroundColor: 'transparent',
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    padding: 0,
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
@@ -247,10 +292,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   inputIcon: {
     marginRight: 10,
@@ -265,9 +314,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#3B82F6',
-    borderRadius: 8,
-    paddingVertical: 14,
+    borderRadius: 10,
+    paddingVertical: 16,
     marginTop: 8,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -278,10 +331,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    paddingVertical: 14,
-    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 16,
+    borderWidth: 1.5,
     borderColor: '#D1D5DB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   registerButtonText: {
     color: '#374151',
