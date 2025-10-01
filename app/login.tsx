@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
@@ -71,7 +72,7 @@ export default function LoginScreen() {
       />
       
       <ImageBackground
-        source={{ uri: 'https://r2-pub.rork.com/generated-images/0a51fbf5-cbde-4f5f-b31c-d7156d202e82.png' }}
+        source={{ uri: 'https://r2-pub.rork.com/generated-images/a70a6cf1-b1e5-4cb9-b97e-4a4c9f5f0a4c.png' }}
         style={[styles.backgroundImage, { paddingTop: insets.top }]}
         resizeMode="cover"
       >
@@ -86,13 +87,13 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
-            <View style={styles.logoContainer}>
+            <BlurView intensity={Platform.OS === 'ios' ? 80 : 100} tint="light" style={styles.logoContainer}>
               <ChurchLogo size={isDesktop ? 120 : 100} />
               <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
               <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión en tu cuenta</Text>
-            </View>
+            </BlurView>
 
-            <View style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
+            <BlurView intensity={Platform.OS === 'ios' ? 80 : 100} tint="light" style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -166,7 +167,7 @@ export default function LoginScreen() {
               <Text style={styles.registerButtonText}>Crear una cuenta</Text>
             </TouchableOpacity>
 
-            </View>
+            </BlurView>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -220,13 +221,16 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 20,
     padding: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
   },
   title: {
     fontSize: 28,
@@ -249,13 +253,16 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 20,
     padding: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
   },
   formContainerDesktop: {
     width: '100%',
@@ -291,15 +298,15 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
     paddingHorizontal: 14,
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
   inputIcon: {
     marginRight: 10,
@@ -314,13 +321,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#3B82F6',
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 16,
     marginTop: 8,
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
   },
   loginButtonText: {
     color: '#FFFFFF',
@@ -330,15 +337,15 @@ const styles = StyleSheet.create({
   registerButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
     paddingVertical: 16,
-    borderWidth: 1.5,
-    borderColor: '#D1D5DB',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
   },
   registerButtonText: {
     color: '#374151',
