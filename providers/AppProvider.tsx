@@ -117,6 +117,10 @@ export const [AppProvider, useApp] = createContextHook(() => {
             // Check if it looks like JSON but isn't valid
             if ((trimmedValue.startsWith('{') || trimmedValue.startsWith('[')) && trimmedValue.length > 1) {
               JSON.parse(trimmedValue); // This will throw if invalid
+            } else if (trimmedValue.length > 0 && !trimmedValue.startsWith('{') && !trimmedValue.startsWith('[') && key !== 'theme_preference') {
+              // If it's not JSON and not a simple string value (like theme), it's corrupted
+              console.warn(`Non-JSON data found for key: ${key}, value starts with: ${trimmedValue.substring(0, 20)}`);
+              corruptedKeys.push(key);
             }
           }
         } catch (parseError) {
@@ -179,19 +183,19 @@ export const [AppProvider, useApp] = createContextHook(() => {
           }
         } catch (parseError) {
           console.error('AppProvider - Error parsing user data:', parseError);
-          console.log('AppProvider - Raw user data:', userData);
-          console.log('AppProvider - Invalid user data, clearing and creating demo user');
+          console.log('AppProvider - Raw user data:', userData?.substring(0, 100));
+          console.log('AppProvider - Invalid user data, clearing');
           await AsyncStorage.removeItem('currentUser');
         }
       }
       
       // No demo user auto-login. Keep user unauthenticated and show login screen.
-      if (!userData || userData === 'null' || userData === 'undefined' || userData.trim() === '') {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+      setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error('Error loading user:', error);
+      setUser(null);
+      setIsAuthenticated(false);
     }
   };
 
