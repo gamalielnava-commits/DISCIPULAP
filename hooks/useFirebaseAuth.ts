@@ -79,19 +79,33 @@ export function useFirebaseAuth() {
 
       let emailToUse = identifier;
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-        const byUsername = await AuthService.getUserByUsername(identifier);
-        if (!byUsername?.email) {
-          const err: any = new Error('Usuario no encontrado');
-          err.code = 'auth/user-not-found';
-          throw err;
+        try {
+          const byUsername = await AuthService.getUserByUsername(identifier);
+          if (!byUsername?.email) {
+            const err: any = new Error('Usuario no encontrado');
+            err.code = 'auth/user-not-found';
+            throw err;
+          }
+          emailToUse = byUsername.email;
+        } catch (usernameError: any) {
+          console.error('Error fetching username:', usernameError);
+          return {
+            success: false,
+            error: 'Error de conexión. Verifica tu configuración de Firebase.'
+          };
         }
-        emailToUse = byUsername.email;
       }
 
       await AuthService.signIn(emailToUse, password);
       return { success: true };
     } catch (error: any) {
       console.error('Sign in error:', error);
+      if (error.message && error.message.includes('JSON')) {
+        return {
+          success: false,
+          error: 'Error de configuración. Firebase no está configurado correctamente.'
+        };
+      }
       return {
         success: false,
         error: getAuthErrorMessage(error.code)
@@ -123,6 +137,12 @@ export function useFirebaseAuth() {
       return { success: true };
     } catch (error: any) {
       console.error('Sign up error:', error);
+      if (error.message && error.message.includes('JSON')) {
+        return {
+          success: false,
+          error: 'Error de configuración. Firebase no está configurado correctamente.'
+        };
+      }
       return {
         success: false,
         error: getAuthErrorMessage(error.code)
