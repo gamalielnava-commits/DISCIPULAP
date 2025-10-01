@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +19,9 @@ import ChurchLogo from '@/components/ChurchLogo';
 
 
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+
+const { width } = Dimensions.get('window');
+const isDesktop = width >= 768;
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -84,16 +88,17 @@ export default function LoginScreen() {
         style={styles.keyboardView}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.logoContainer}>
-            <ChurchLogo size={80} />
-            <Text style={styles.title}>Bienvenido</Text>
-            <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
-          </View>
+          <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
+            <View style={styles.logoContainer}>
+              <ChurchLogo size={isDesktop ? 100 : 80} />
+              <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
+              <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión para continuar</Text>
+            </View>
 
-          <View style={styles.formContainer}>
+            <View style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -101,11 +106,11 @@ export default function LoginScreen() {
             ) : null}
 
             <View style={styles.inputContainer}>
-              <Mail size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <Mail size={20} color="#8B5CF6" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Correo o usuario"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#A78BFA"
                 value={identifier}
                 onChangeText={setIdentifier}
                 autoCapitalize="none"
@@ -115,11 +120,11 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Lock size={20} color="#9CA3AF" style={styles.inputIcon} />
+              <Lock size={20} color="#8B5CF6" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#A78BFA"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -128,9 +133,9 @@ export default function LoginScreen() {
               />
               <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} accessibilityRole="button" testID="toggle-password-visibility">
                 {showPassword ? (
-                  <EyeOff size={20} color="#6B7280" />
+                  <EyeOff size={20} color="#8B5CF6" />
                 ) : (
-                  <Eye size={20} color="#6B7280" />
+                  <Eye size={20} color="#8B5CF6" />
                 )}
               </TouchableOpacity>
             </View>
@@ -155,11 +160,12 @@ export default function LoginScreen() {
               style={styles.registerButton}
               onPress={() => router.push('/register')}
             >
-              <UserPlus size={20} color="#7C3AED" />
+              <UserPlus size={20} color="#8B5CF6" />
               <Text style={styles.registerButtonText}>Crear Cuenta</Text>
             </TouchableOpacity>
 
 
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -170,7 +176,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#8B5CF6',
   },
   keyboardView: {
     flex: 1,
@@ -179,6 +185,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
+  },
+  scrollContentDesktop: {
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+  contentWrapper: {
+    width: '100%',
+  },
+  contentWrapperDesktop: {
+    maxWidth: 480,
+    alignSelf: 'center',
+    width: '100%',
   },
   logoContainer: {
     alignItems: 'center',
@@ -190,48 +208,63 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 20,
   },
+  titleDesktop: {
+    fontSize: 40,
+    marginTop: 24,
+  },
   subtitle: {
     fontSize: 16,
-    color: '#E9D5FF',
+    color: '#EDE9FE',
     marginTop: 8,
+  },
+  subtitleDesktop: {
+    fontSize: 18,
+    marginTop: 12,
   },
   formContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 24,
+    padding: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  formContainerDesktop: {
+    padding: 40,
+    borderRadius: 32,
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#DC2626',
   },
   errorText: {
     color: '#DC2626',
     fontSize: 14,
     textAlign: 'center',
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    backgroundColor: '#FAF5FF',
+    borderRadius: 14,
+    marginBottom: 18,
+    paddingHorizontal: 18,
+    borderWidth: 2,
+    borderColor: '#E9D5FF',
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 16,
     fontSize: 16,
     color: '#1F2937',
   },
@@ -239,31 +272,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7C3AED',
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 8,
-    gap: 8,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginTop: 12,
+    gap: 10,
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   registerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3E8FF',
-    borderRadius: 12,
-    paddingVertical: 14,
-    marginTop: 12,
-    gap: 8,
+    backgroundColor: '#FAF5FF',
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginTop: 14,
+    gap: 10,
+    borderWidth: 2,
+    borderColor: '#E9D5FF',
   },
   registerButtonText: {
-    color: '#7C3AED',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#8B5CF6',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   divider: {
     flexDirection: 'row',
