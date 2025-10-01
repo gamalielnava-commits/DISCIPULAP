@@ -71,7 +71,7 @@ export default function LoginScreen() {
       />
       
       <ImageBackground
-        source={{ uri: 'https://r2-pub.rork.com/generated-images/b43ac65a-90f4-468a-b5ce-3682f2fdfd64.png' }}
+        source={{ uri: 'https://r2-pub.rork.com/generated-images/dacbfb82-334f-46d8-9d8c-74c43c5749cf.png' }}
         style={[styles.backgroundImage, { paddingTop: insets.top }]}
         resizeMode="cover"
       >
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   keyboardView: {
     flex: 1,
