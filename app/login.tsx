@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Mail, Lock, LogIn, UserPlus, Eye, EyeOff, LogOut } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
 
@@ -33,7 +33,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const { signIn: firebaseSignIn, signOut: firebaseSignOut } = useFirebaseAuth();
+  const { signIn: firebaseSignIn } = useFirebaseAuth();
 
   const handleLogin = async () => {
     const id = identifier?.trim() ?? '';
@@ -61,20 +61,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSignOut = async () => {
-    setLoading(true);
-    try {
-      await firebaseSignOut();
-      // The auth state change will handle the redirect
-    } catch (err) {
-      console.error('Error signing out:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Invitado deshabilitado a solicitud: solo login con correo/usuario + contraseña
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen 
@@ -93,9 +79,9 @@ export default function LoginScreen() {
         >
           <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
             <View style={styles.logoContainer}>
-              <ChurchLogo size={isDesktop ? 100 : 80} />
+              <ChurchLogo size={isDesktop ? 120 : 100} />
               <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
-              <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión para continuar</Text>
+              <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión en tu cuenta</Text>
             </View>
 
             <View style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
@@ -105,39 +91,45 @@ export default function LoginScreen() {
               </View>
             ) : null}
 
-            <View style={styles.inputContainer}>
-              <Mail size={20} color="#8B5CF6" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Correo o usuario"
-                placeholderTextColor="#A78BFA"
-                value={identifier}
-                onChangeText={setIdentifier}
-                autoCapitalize="none"
-                autoCorrect={false}
-                testID="identifier-input"
-              />
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Correo o usuario</Text>
+              <View style={styles.inputContainer}>
+                <Mail size={20} color="#6B7280" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ingresa tu correo o usuario"
+                  placeholderTextColor="#9CA3AF"
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  testID="identifier-input"
+                />
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Lock size={20} color="#8B5CF6" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Contraseña"
-                placeholderTextColor="#A78BFA"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                testID="password-input"
-              />
-              <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} accessibilityRole="button" testID="toggle-password-visibility">
-                {showPassword ? (
-                  <EyeOff size={20} color="#8B5CF6" />
-                ) : (
-                  <Eye size={20} color="#8B5CF6" />
-                )}
-              </TouchableOpacity>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Contraseña</Text>
+              <View style={styles.inputContainer}>
+                <Lock size={20} color="#6B7280" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ingresa tu contraseña"
+                  placeholderTextColor="#9CA3AF"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  testID="password-input"
+                />
+                <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} accessibilityRole="button" testID="toggle-password-visibility">
+                  {showPassword ? (
+                    <EyeOff size={20} color="#6B7280" />
+                  ) : (
+                    <Eye size={20} color="#6B7280" />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             <TouchableOpacity 
@@ -149,21 +141,22 @@ export default function LoginScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <>
-                  <LogIn size={20} color="#FFFFFF" />
-                  <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
-                </>
+                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
               )}
             </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o</Text>
+              <View style={styles.dividerLine} />
+            </View>
 
             <TouchableOpacity 
               style={styles.registerButton}
               onPress={() => router.push('/register')}
             >
-              <UserPlus size={20} color="#8B5CF6" />
-              <Text style={styles.registerButtonText}>Crear Cuenta</Text>
+              <Text style={styles.registerButtonText}>Crear una cuenta</Text>
             </TouchableOpacity>
-
 
             </View>
           </View>
@@ -176,7 +169,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FFFFFF',
   },
   keyboardView: {
     flex: 1,
@@ -184,7 +177,8 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   scrollContentDesktop: {
     paddingHorizontal: 40,
@@ -194,123 +188,110 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   contentWrapperDesktop: {
-    maxWidth: 480,
+    maxWidth: 440,
     alignSelf: 'center',
     width: '100%',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 48,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 20,
-  },
-  titleDesktop: {
-    fontSize: 40,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
     marginTop: 24,
   },
+  titleDesktop: {
+    fontSize: 32,
+    marginTop: 28,
+  },
   subtitle: {
-    fontSize: 16,
-    color: '#EDE9FE',
+    fontSize: 15,
+    color: '#6B7280',
     marginTop: 8,
   },
   subtitleDesktop: {
-    fontSize: 18,
-    marginTop: 12,
+    fontSize: 16,
+    marginTop: 10,
   },
   formContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    width: '100%',
   },
   formContainerDesktop: {
-    padding: 40,
-    borderRadius: 32,
+    width: '100%',
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#DC2626',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
   },
   errorText: {
     color: '#DC2626',
     fontSize: 14,
     textAlign: 'center',
-    fontWeight: '500',
+  },
+  inputWrapper: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAF5FF',
-    borderRadius: 14,
-    marginBottom: 18,
-    paddingHorizontal: 18,
-    borderWidth: 2,
-    borderColor: '#E9D5FF',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
   inputIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#1F2937',
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#111827',
   },
   loginButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#8B5CF6',
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginTop: 12,
-    gap: 10,
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    backgroundColor: '#3B82F6',
+    borderRadius: 8,
+    paddingVertical: 14,
+    marginTop: 8,
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 16,
+    fontWeight: '600',
   },
   registerButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FAF5FF',
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginTop: 14,
-    gap: 10,
-    borderWidth: 2,
-    borderColor: '#E9D5FF',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
   registerButtonText: {
-    color: '#8B5CF6',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 24,
   },
   dividerLine: {
     flex: 1,
@@ -331,5 +312,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textDecorationLine: 'underline',
   },
-
 });
