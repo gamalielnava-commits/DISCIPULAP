@@ -108,7 +108,8 @@ export const [AppProvider, useApp] = createContextHook(() => {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const corruptedKeys: string[] = [];
-      const allowedNonJsonKeys = ['theme_preference', 'dark', 'light'];
+      const allowedNonJsonKeys = ['theme_preference'];
+      const allowedNonJsonValues = ['dark', 'light'];
       
       for (const key of keys) {
         try {
@@ -120,8 +121,17 @@ export const [AppProvider, useApp] = createContextHook(() => {
           const trimmedValue = value.trim();
           
           // Skip validation for allowed non-JSON keys
-          if (allowedNonJsonKeys.includes(key) || allowedNonJsonKeys.includes(trimmedValue)) {
-            continue;
+          if (allowedNonJsonKeys.includes(key)) {
+            // For theme_preference, check if value is valid
+            if (key === 'theme_preference' && allowedNonJsonValues.includes(trimmedValue)) {
+              continue;
+            }
+            // If it's theme_preference but invalid value, mark for removal
+            if (key === 'theme_preference' && !allowedNonJsonValues.includes(trimmedValue)) {
+              console.warn(`Invalid theme preference value: ${trimmedValue}`);
+              corruptedKeys.push(key);
+              continue;
+            }
           }
           
           // Check if it looks like JSON
@@ -155,15 +165,16 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const loadThemePreference = async () => {
     try {
       const savedTheme = await AsyncStorage.getItem('theme_preference');
-      if (savedTheme !== null) {
-        setIsDarkMode(savedTheme === 'dark');
+      if (savedTheme !== null && savedTheme !== 'null' && savedTheme !== 'undefined') {
+        const trimmedTheme = savedTheme.trim();
+        setIsDarkMode(trimmedTheme === 'dark');
       } else {
-        // Set dark mode as default and save it
         setIsDarkMode(true);
         await AsyncStorage.setItem('theme_preference', 'dark');
       }
     } catch (error) {
       console.error('Error loading theme preference:', error);
+      setIsDarkMode(true);
     }
   };
 
