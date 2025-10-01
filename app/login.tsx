@@ -87,13 +87,13 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
-            <BlurView intensity={Platform.OS === 'ios' ? 80 : 100} tint="light" style={styles.logoContainer}>
+            <BlurView intensity={Platform.OS === 'ios' ? 50 : 60} tint="light" style={styles.logoContainer}>
               <ChurchLogo size={isDesktop ? 120 : 100} />
               <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
               <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión en tu cuenta</Text>
             </BlurView>
 
-            <BlurView intensity={Platform.OS === 'ios' ? 80 : 100} tint="light" style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
+            <BlurView intensity={Platform.OS === 'ios' ? 50 : 60} tint="light" style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 20,
     padding: 24,
     overflow: 'hidden',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 20,
     padding: 24,
     overflow: 'hidden',
