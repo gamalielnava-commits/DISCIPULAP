@@ -108,23 +108,37 @@ export const [AppProvider, useApp] = createContextHook(() => {
     try {
       const keys = await AsyncStorage.getAllKeys();
       const corruptedKeys: string[] = [];
+      const allowedNonJsonKeys = ['theme_preference', 'dark', 'light'];
       
       for (const key of keys) {
         try {
           const value = await AsyncStorage.getItem(key);
-          if (value && value !== 'null' && value !== 'undefined' && value.trim() !== '') {
-            const trimmedValue = value.trim();
-            // Check if it looks like JSON but isn't valid
-            if ((trimmedValue.startsWith('{') || trimmedValue.startsWith('[')) && trimmedValue.length > 1) {
-              JSON.parse(trimmedValue); // This will throw if invalid
-            } else if (trimmedValue.length > 0 && !trimmedValue.startsWith('{') && !trimmedValue.startsWith('[') && key !== 'theme_preference') {
-              // If it's not JSON and not a simple string value (like theme), it's corrupted
-              console.warn(`Non-JSON data found for key: ${key}, value starts with: ${trimmedValue.substring(0, 20)}`);
+          if (!value || value === 'null' || value === 'undefined' || value.trim() === '') {
+            continue;
+          }
+          
+          const trimmedValue = value.trim();
+          
+          // Skip validation for allowed non-JSON keys
+          if (allowedNonJsonKeys.includes(key) || allowedNonJsonKeys.includes(trimmedValue)) {
+            continue;
+          }
+          
+          // Check if it looks like JSON
+          if (trimmedValue.startsWith('{') || trimmedValue.startsWith('[')) {
+            try {
+              JSON.parse(trimmedValue);
+            } catch (e) {
+              console.warn(`Invalid JSON for key: ${key}`);
               corruptedKeys.push(key);
             }
+          } else {
+            // If it doesn't start with { or [, it's likely corrupted data
+            console.warn(`Non-JSON data found for key: ${key}`);
+            corruptedKeys.push(key);
           }
-        } catch (parseError) {
-          console.warn(`Corrupted data found for key: ${key}, removing...`);
+        } catch (error) {
+          console.warn(`Error checking key: ${key}`, error);
           corruptedKeys.push(key);
         }
       }
@@ -165,33 +179,37 @@ export const [AppProvider, useApp] = createContextHook(() => {
   const loadUser = async () => {
     try {
       const userData = await AsyncStorage.getItem('currentUser');
-      console.log('AppProvider - Datos del usuario desde AsyncStorage:', userData);
+      console.log('AppProvider - Loading user from AsyncStorage');
       
-      if (userData && userData !== 'null' && userData !== 'undefined' && userData.trim() !== '') {
-        try {
-          // Check if userData starts with valid JSON characters
-          const trimmedData = userData.trim();
-          if (trimmedData.startsWith('{') || trimmedData.startsWith('[')) {
-            const parsedUser = JSON.parse(trimmedData);
-            console.log('AppProvider - Usuario parseado:', parsedUser);
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-            return; // Exit early if successful
-          } else {
-            console.log('AppProvider - Invalid JSON format, clearing user data');
-            await AsyncStorage.removeItem('currentUser');
-          }
-        } catch (parseError) {
-          console.error('AppProvider - Error parsing user data:', parseError);
-          console.log('AppProvider - Raw user data:', userData?.substring(0, 100));
-          console.log('AppProvider - Invalid user data, clearing');
-          await AsyncStorage.removeItem('currentUser');
-        }
+      if (!userData || userData === 'null' || userData === 'undefined' || userData.trim() === '') {
+        console.log('AppProvider - No user data found');
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
       }
       
-      // No demo user auto-login. Keep user unauthenticated and show login screen.
-      setUser(null);
-      setIsAuthenticated(false);
+      const trimmedData = userData.trim();
+      
+      // Validate JSON format
+      if (!trimmedData.startsWith('{')) {
+        console.warn('AppProvider - Invalid user data format, clearing');
+        await AsyncStorage.removeItem('currentUser');
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+      
+      try {
+        const parsedUser = JSON.parse(trimmedData);
+        console.log('AppProvider - User loaded successfully');
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (parseError) {
+        console.error('AppProvider - JSON parse error:', parseError);
+        await AsyncStorage.removeItem('currentUser');
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error('Error loading user:', error);
       setUser(null);
@@ -222,33 +240,39 @@ export const [AppProvider, useApp] = createContextHook(() => {
     // También actualizar en la lista de usuarios si existe
     try {
       const storedUsers = await AsyncStorage.getItem('users');
-      if (storedUsers && storedUsers !== 'null' && storedUsers !== 'undefined' && storedUsers.trim() !== '') {
-        try {
-          const trimmedUsers = storedUsers.trim();
-          if (trimmedUsers.startsWith('{') || trimmedUsers.startsWith('[')) {
-            const usersList = JSON.parse(trimmedUsers);
-            if (Array.isArray(usersList)) {
-              const updatedUsersList = usersList.map((u: User) => 
-                u.id === user.id ? updatedUser : u
-              );
-              await AsyncStorage.setItem('users', JSON.stringify(updatedUsersList));
-              console.log('AppProvider - Usuario actualizado en la lista de usuarios');
-            } else {
-              console.log('AppProvider - Users data is not an array in update, creating new list');
-              await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
-            }
-          } else {
-            console.log('AppProvider - Invalid users JSON format in update, creating new list');
-            await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
-          }
-        } catch (parseError) {
-          console.error('Error parsing users list:', parseError);
-          console.log('AppProvider - Raw users data in update:', storedUsers);
-          await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
-        }
-      } else {
+      
+      if (!storedUsers || storedUsers === 'null' || storedUsers === 'undefined' || storedUsers.trim() === '') {
         await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
-        console.log('AppProvider - Creada nueva lista de usuarios con el usuario actualizado');
+        console.log('AppProvider - Created new users list');
+        return;
+      }
+      
+      const trimmedUsers = storedUsers.trim();
+      
+      if (!trimmedUsers.startsWith('[')) {
+        console.warn('AppProvider - Invalid users format, creating new list');
+        await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
+        return;
+      }
+      
+      try {
+        const usersList = JSON.parse(trimmedUsers);
+        
+        if (!Array.isArray(usersList)) {
+          console.warn('AppProvider - Users is not an array, creating new list');
+          await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
+          return;
+        }
+        
+        const updatedUsersList = usersList.map((u: User) => 
+          u.id === user.id ? updatedUser : u
+        );
+        
+        await AsyncStorage.setItem('users', JSON.stringify(updatedUsersList));
+        console.log('AppProvider - User updated in users list');
+      } catch (parseError) {
+        console.error('Error parsing users list:', parseError);
+        await AsyncStorage.setItem('users', JSON.stringify([updatedUser]));
       }
     } catch (error) {
       console.error('Error updating user in users list:', error);
@@ -273,24 +297,33 @@ export const [AppProvider, useApp] = createContextHook(() => {
 
       // Parse data with error handling
       const parseJsonSafely = (data: string | null, defaultValue: any[] = []) => {
-        if (!data || data === 'null' || data === 'undefined' || data.trim() === '') {
+        if (!data || data === 'null' || data === 'undefined') {
           return defaultValue;
         }
+        
+        const trimmedData = data.trim();
+        if (trimmedData === '') {
+          return defaultValue;
+        }
+        
+        // Check for valid JSON start characters
+        if (!trimmedData.startsWith('{') && !trimmedData.startsWith('[')) {
+          console.warn('Invalid JSON format - does not start with { or [');
+          return defaultValue;
+        }
+        
         try {
-          const trimmedData = data.trim();
-          if (!trimmedData.startsWith('{') && !trimmedData.startsWith('[')) {
-            console.warn('Invalid JSON format detected:', trimmedData.substring(0, 50));
-            return defaultValue;
-          }
           const parsed = JSON.parse(trimmedData);
+          
           // Ensure we return an array for array-expected data
           if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
             console.warn('Expected array but got:', typeof parsed);
             return defaultValue;
           }
+          
           return parsed;
         } catch (error) {
-          console.error('Error parsing JSON data:', error, 'Data preview:', data?.substring(0, 100));
+          console.error('JSON parse error:', error);
           return defaultValue;
         }
       };
