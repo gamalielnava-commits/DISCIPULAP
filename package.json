@@ -12,7 +12,7 @@
 "build:web": "expo export --platform web",
 "build:android": "expo build:android",
 "build:ios": "expo build:ios"
-}
+},
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
     "@firebase/app": "^0.14.3",
