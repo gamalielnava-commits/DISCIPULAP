@@ -58,9 +58,10 @@ export default function PredicasScreen() {
   const colors = isDarkMode ? Colors.dark : Colors.light;
   const isAdmin = user?.role === 'admin';
   
-  const [selectedTab, setSelectedTab] = useState<'sermons' | 'series'>('series');
+  const [selectedTab, setSelectedTab] = useState<'sermons' | 'series'>('sermons');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSermonModal, setShowSermonModal] = useState(false);
+  const [showCreateTypeModal, setShowCreateTypeModal] = useState(false);
   const [selectedSeries, setSelectedSeries] = useState<SermonSeries | null>(null);
   const [viewingSeries, setViewingSeries] = useState<SermonSeries | null>(null);
   const [showAddToSeriesModal, setShowAddToSeriesModal] = useState(false);
@@ -691,12 +692,9 @@ Formato de respuesta en JSON:
                     // Si estamos viendo una serie, añadir sermón a esa serie
                     setSelectedSeries(viewingSeries);
                     setShowAddToSeriesModal(true);
-                  } else if (selectedTab === 'series') {
-                    // Si estamos en la pestaña de series, crear nueva serie
-                    setShowCreateModal(true);
                   } else {
-                    // Si estamos en la pestaña de sermones, crear sermón independiente
-                    setShowSermonModal(true);
+                    // Mostrar modal para elegir tipo
+                    setShowCreateTypeModal(true);
                   }
                 }}
               >
@@ -1054,6 +1052,20 @@ Formato de respuesta en JSON:
               </View>
 
               <View style={styles.formGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>URL de YouTube (opcional)</Text>
+                <Text style={[styles.helperText, { color: colors.textSecondary }]}>Pega el enlace del video de YouTube</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
+                  value={sermonYoutubeUrl}
+                  onChangeText={setSermonYoutubeUrl}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  placeholderTextColor={colors.textSecondary}
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
                 <Text style={[styles.label, { color: colors.text }]}>Documento del Sermón</Text>
                 <Text style={[styles.helperText, { color: colors.textSecondary }]}>Sube un archivo para generar automáticamente el contenido del sermón</Text>
                 <TouchableOpacity
@@ -1242,6 +1254,20 @@ Formato de respuesta en JSON:
               </View>
 
               <View style={styles.formGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>URL de YouTube (opcional)</Text>
+                <Text style={[styles.helperText, { color: colors.textSecondary }]}>Pega el enlace del video de YouTube</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
+                  value={sermonYoutubeUrl}
+                  onChangeText={setSermonYoutubeUrl}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  placeholderTextColor={colors.textSecondary}
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
                 <Text style={[styles.label, { color: colors.text }]}>Documento del Sermón</Text>
                 <Text style={[styles.helperText, { color: colors.textSecondary }]}>Sube un archivo para generar automáticamente el contenido del sermón</Text>
                 <TouchableOpacity
@@ -1358,6 +1384,59 @@ Formato de respuesta en JSON:
                 disabled={!sermonTitle.trim()}
               >
                 <Text style={styles.saveButtonText}>Añadir a Serie</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Create Type Selection Modal */}
+      <Modal
+        visible={showCreateTypeModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowCreateTypeModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.typeSelectionModal, { backgroundColor: colors.surface }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>¿Qué deseas crear?</Text>
+              <TouchableOpacity onPress={() => setShowCreateTypeModal(false)}>
+                <X size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.typeOptionsContainer}>
+              <TouchableOpacity
+                style={[styles.typeOption, { backgroundColor: colors.background, borderColor: colors.primary }]}
+                onPress={() => {
+                  setShowCreateTypeModal(false);
+                  setShowSermonModal(true);
+                }}
+              >
+                <View style={[styles.typeIconContainer, { backgroundColor: colors.primary + '20' }]}>
+                  <Mic size={32} color={colors.primary} />
+                </View>
+                <Text style={[styles.typeOptionTitle, { color: colors.text }]}>Sermón Individual</Text>
+                <Text style={[styles.typeOptionDescription, { color: colors.textSecondary }]}>
+                  Crea un sermón independiente que no forma parte de ninguna serie
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.typeOption, { backgroundColor: colors.background, borderColor: colors.primary }]}
+                onPress={() => {
+                  setShowCreateTypeModal(false);
+                  setShowCreateModal(true);
+                }}
+              >
+                <View style={[styles.typeIconContainer, { backgroundColor: colors.primary + '20' }]}>
+                  <BookOpen size={32} color={colors.primary} />
+                </View>
+                <Text style={[styles.typeOptionTitle, { color: colors.text }]}>Serie de Sermones</Text>
+                <Text style={[styles.typeOptionDescription, { color: colors.textSecondary }]}>
+                  Crea una serie temática que agrupa múltiples sermones relacionados
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1891,5 +1970,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 8,
     fontStyle: 'italic' as const,
+  },
+  typeSelectionModal: {
+    marginHorizontal: 20,
+    marginVertical: 'auto' as any,
+    borderRadius: 20,
+    maxHeight: '80%',
+  },
+  typeOptionsContainer: {
+    padding: 20,
+    gap: 16,
+  },
+  typeOption: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: 'center',
+  },
+  typeIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  typeOptionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  typeOptionDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
