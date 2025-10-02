@@ -57,10 +57,10 @@ export function useFirebaseAuth() {
   const signIn = async (identifier: string, password: string) => {
     try {
       if (!IS_FIREBASE_CONFIGURED) {
-        if ((identifier === 'admin@gmail.com' || identifier === 'admin') && password === '123456') {
+        if (identifier === 'admin' && password === 'Admin123') {
           const demoUser: User = {
             id: '1',
-            email: 'admin@gmail.com',
+            email: 'admin@discipulado.com',
             nombre: 'Administrador',
             apellido: 'Principal',
             role: 'admin',
@@ -74,7 +74,7 @@ export function useFirebaseAuth() {
           setIsAuthenticated(true);
           return { success: true };
         }
-        return { success: false, error: 'Credenciales incorrectas.' };
+        return { success: false, error: 'Credenciales incorrectas. Usuario: admin, Contraseña: Admin123' };
       }
 
       let emailToUse = identifier;
