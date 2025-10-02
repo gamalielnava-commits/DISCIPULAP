@@ -75,7 +75,7 @@ export default function LoginScreen() {
       />
       
       <ImageBackground
-        source={{ uri: 'https://r2-pub.rork.com/generated-images/d019d3b1-ca54-4419-8e95-fc7ba28e153a.png' }}
+        source={{ uri: 'https://r2-pub.rork.com/generated-images/035ea3e7-932e-4497-a7e6-8c848edf1244.png' }}
         style={[styles.backgroundImage, { paddingTop: insets.top }]}
         resizeMode="cover"
       >
