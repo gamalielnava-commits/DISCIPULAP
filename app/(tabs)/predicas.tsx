@@ -58,6 +58,11 @@ export default function PredicasScreen() {
   const colors = isDarkMode ? Colors.dark : Colors.light;
   const isAdmin = user?.role === 'admin';
   
+  // Solo los administradores pueden crear/editar sermones y series
+  if (!isAdmin) {
+    console.log('Usuario sin permisos de administrador. No puede crear/editar sermones.');
+  }
+  
   const [selectedTab, setSelectedTab] = useState<'sermons' | 'series'>('sermons');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSermonModal, setShowSermonModal] = useState(false);
@@ -1523,8 +1528,8 @@ Formato de respuesta en JSON:
                   ) : null}
                   {selectedSermon?.youtubeUrl ? (
                     <TouchableOpacity onPress={() => selectedSermon?.youtubeUrl && handleOpenLink(selectedSermon.youtubeUrl)} style={styles.filterChip} testID="open-sermon-youtube">
-                      <Youtube size={18} color={colors.primary} />
-                      <Text style={[styles.filterChipText, { color: colors.text, marginLeft: 6 }]}>Ver video</Text>
+                      <Play size={18} color={colors.primary} />
+                      <Text style={[styles.filterChipText, { color: colors.text, marginLeft: 6 }]}>Reproducir video</Text>
                     </TouchableOpacity>
                   ) : null}
                   {selectedSermon?.pdfUrl ? (
