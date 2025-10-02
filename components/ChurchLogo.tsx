@@ -46,7 +46,7 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
           }
         ]}>
           <Image 
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/rl4z7gdr9adb1hvvral1p' }}
+            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/w2r3gtdvkqr2rpre1dl8o' }}
             style={{
               width: size * 0.7,
               height: size * 0.7,
