@@ -115,6 +115,7 @@ export const [AppProvider, useApp] = createContextHook(() => {
         try {
           const value = await AsyncStorage.getItem(key);
           if (!value || value === 'null' || value === 'undefined' || value.trim() === '') {
+            corruptedKeys.push(key);
             continue;
           }
           
@@ -139,12 +140,12 @@ export const [AppProvider, useApp] = createContextHook(() => {
             try {
               JSON.parse(trimmedValue);
             } catch (e) {
-              console.warn(`Invalid JSON for key: ${key}`);
+              console.warn(`Invalid JSON for key: ${key}, value starts with: ${trimmedValue.substring(0, 50)}`);
               corruptedKeys.push(key);
             }
-          } else {
-            // If it doesn't start with { or [, it's likely corrupted data
-            console.warn(`Non-JSON data found for key: ${key}`);
+          } else if (!allowedNonJsonKeys.includes(key)) {
+            // If it doesn't start with { or [ and it's not an allowed non-JSON key, it's corrupted
+            console.warn(`Non-JSON data found for key: ${key}, value: ${trimmedValue.substring(0, 50)}`);
             corruptedKeys.push(key);
           }
         } catch (error) {
@@ -154,8 +155,9 @@ export const [AppProvider, useApp] = createContextHook(() => {
       }
       
       if (corruptedKeys.length > 0) {
+        console.log(`Removing ${corruptedKeys.length} corrupted keys:`, corruptedKeys);
         await AsyncStorage.multiRemove(corruptedKeys);
-        console.log(`Removed ${corruptedKeys.length} corrupted keys:`, corruptedKeys);
+        console.log('Corrupted data cleared successfully');
       }
     } catch (error) {
       console.error('Error clearing corrupted data:', error);
