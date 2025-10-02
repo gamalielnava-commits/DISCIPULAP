@@ -41,8 +41,8 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
           { 
             width: size, 
             height: size,
-            backgroundColor: isDark ? '#9333ea' : '#7c3aed',
-            shadowColor: isDark ? '#9333ea' : '#7c3aed',
+            backgroundColor: '#8B5CF6',
+            shadowColor: '#8B5CF6',
           }
         ]}>
           <Image 
@@ -50,7 +50,6 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
             style={{
               width: size * 0.65,
               height: size * 0.65,
-              opacity: 0.85,
               tintColor: '#ffffff',
             }}
             resizeMode="contain"
