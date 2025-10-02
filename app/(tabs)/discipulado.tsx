@@ -392,104 +392,247 @@ export default function DiscipuladoScreen() {
               marginHorizontal: 16,
               marginTop: 8,
               marginBottom: 8,
-              borderRadius: 16,
+              borderRadius: 20,
               borderWidth: 1,
-              padding: 16,
+              overflow: 'hidden',
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 8,
-              elevation: 5,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              elevation: 8,
             }]}
             >
-              <Text style={[styles.progressTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b', marginBottom: 16 }]}>Mi Progreso en Discipulado</Text>
-
-              <View style={styles.progressGrid}>
-                <View style={styles.progressItem}>
-                  <View style={[styles.progressIconContainer, { backgroundColor: isDarkMode ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)' }]}>
-                    <BookOpen size={24} color="#3b82f6" />
+              <LinearGradient
+                colors={isDarkMode ? ['#1e293b', '#0f172a'] : ['#ffffff', '#f8fafc']}
+                style={{ padding: 20 }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                  <View style={[styles.progressIconContainer, { 
+                    backgroundColor: isDarkMode ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)',
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    marginRight: 16
+                  }]}>
+                    <Text style={{ fontSize: 28 }}>🎓</Text>
                   </View>
-                  <Text style={[styles.progressValue, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-                    {(() => {
-                      let leccionesCompletadas = 0;
-                      Object.values(modulos).forEach(m => {
-                        m.lecciones.forEach(l => {
-                          const progreso = calcularProgreso(l.id);
-                          if (progreso === 100) leccionesCompletadas++;
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.progressTitle, { 
+                      color: isDarkMode ? '#f1f5f9' : '#1e293b', 
+                      marginBottom: 4,
+                      fontSize: 20,
+                      fontWeight: '700'
+                    }]}>Mi Progreso en Discipulado</Text>
+                    <Text style={{ 
+                      color: isDarkMode ? '#94a3b8' : '#64748b',
+                      fontSize: 13
+                    }}>Continúa creciendo en tu fe</Text>
+                  </View>
+                </View>
+
+                <View style={styles.progressGrid}>
+                  <View style={[styles.progressItem, {
+                    backgroundColor: isDarkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)',
+                    borderRadius: 16,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)'
+                  }]}>
+                    <View style={[styles.progressIconContainer, { 
+                      backgroundColor: isDarkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)',
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      marginBottom: 12
+                    }]}>
+                      <BookOpen size={24} color="#3b82f6" />
+                    </View>
+                    <Text style={[styles.progressValue, { 
+                      color: isDarkMode ? '#f1f5f9' : '#1e293b',
+                      fontSize: 32,
+                      fontWeight: '800',
+                      marginBottom: 4
+                    }]}>
+                      {(() => {
+                        let leccionesCompletadas = 0;
+                        Object.values(modulos).forEach(m => {
+                          m.lecciones.forEach(l => {
+                            const progreso = calcularProgreso(l.id);
+                            if (progreso === 100) leccionesCompletadas++;
+                          });
                         });
-                      });
-                      return leccionesCompletadas;
-                    })()}
-                  </Text>
-                  <Text style={[styles.progressLabel, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>Lecciones</Text>
-                </View>
-
-                <View style={styles.progressItem}>
-                  <View style={[styles.progressIconContainer, { backgroundColor: isDarkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)' }]}>
-                    <Check size={24} color="#22c55e" />
+                        return leccionesCompletadas;
+                      })()}
+                    </Text>
+                    <Text style={[styles.progressLabel, { 
+                      color: isDarkMode ? '#94a3b8' : '#64748b',
+                      fontSize: 12,
+                      fontWeight: '600'
+                    }]}>Lecciones</Text>
                   </View>
-                  <Text style={[styles.progressValue, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-                    {Object.keys(preguntasRespondidas).filter(key => preguntasRespondidas[key]).length}
-                  </Text>
-                  <Text style={[styles.progressLabel, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>Preguntas</Text>
-                </View>
 
-                <View style={styles.progressItem}>
-                  <View style={[styles.progressIconContainer, { backgroundColor: isDarkMode ? 'rgba(251,146,60,0.15)' : 'rgba(251,146,60,0.1)' }]}>
-                    <Text style={{ fontSize: 20 }}>🏆</Text>
+                  <View style={[styles.progressItem, {
+                    backgroundColor: isDarkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.05)',
+                    borderRadius: 16,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.1)'
+                  }]}>
+                    <View style={[styles.progressIconContainer, { 
+                      backgroundColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)',
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      marginBottom: 12
+                    }]}>
+                      <Check size={24} color="#22c55e" />
+                    </View>
+                    <Text style={[styles.progressValue, { 
+                      color: isDarkMode ? '#f1f5f9' : '#1e293b',
+                      fontSize: 32,
+                      fontWeight: '800',
+                      marginBottom: 4
+                    }]}>
+                      {Object.keys(preguntasRespondidas).filter(key => preguntasRespondidas[key]).length}
+                    </Text>
+                    <Text style={[styles.progressLabel, { 
+                      color: isDarkMode ? '#94a3b8' : '#64748b',
+                      fontSize: 12,
+                      fontWeight: '600'
+                    }]}>Preguntas</Text>
                   </View>
-                  <Text style={[styles.progressValue, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-                    {(() => {
-                      let totalPuntos = 0;
-                      Object.values(modulos).forEach(m => {
-                        m.lecciones.forEach(l => {
-                          l.secciones.forEach(s => {
-                            s.preguntas?.forEach(p => {
-                              if (preguntasRespondidas[p.id]) totalPuntos += p.puntos ?? 10;
+
+                  <View style={[styles.progressItem, {
+                    backgroundColor: isDarkMode ? 'rgba(251,146,60,0.1)' : 'rgba(251,146,60,0.05)',
+                    borderRadius: 16,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(251,146,60,0.2)' : 'rgba(251,146,60,0.1)'
+                  }]}>
+                    <View style={[styles.progressIconContainer, { 
+                      backgroundColor: isDarkMode ? 'rgba(251,146,60,0.2)' : 'rgba(251,146,60,0.15)',
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      marginBottom: 12,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }]}>
+                      <Text style={{ fontSize: 24 }}>🏆</Text>
+                    </View>
+                    <Text style={[styles.progressValue, { 
+                      color: isDarkMode ? '#f1f5f9' : '#1e293b',
+                      fontSize: 32,
+                      fontWeight: '800',
+                      marginBottom: 4
+                    }]}>
+                      {(() => {
+                        let totalPuntos = 0;
+                        Object.values(modulos).forEach(m => {
+                          m.lecciones.forEach(l => {
+                            l.secciones.forEach(s => {
+                              s.preguntas?.forEach(p => {
+                                if (preguntasRespondidas[p.id]) totalPuntos += p.puntos ?? 10;
+                              });
                             });
                           });
                         });
-                      });
-                      return totalPuntos;
-                    })()}
-                  </Text>
-                  <Text style={[styles.progressLabel, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>Puntos</Text>
-                </View>
-
-                <View style={styles.progressItem}>
-                  <View style={[styles.progressIconContainer, { backgroundColor: isDarkMode ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.1)' }]}>
-                    <Text style={{ fontSize: 20 }}>📈</Text>
+                        return totalPuntos;
+                      })()}
+                    </Text>
+                    <Text style={[styles.progressLabel, { 
+                      color: isDarkMode ? '#94a3b8' : '#64748b',
+                      fontSize: 12,
+                      fontWeight: '600'
+                    }]}>Puntos</Text>
                   </View>
-                  <Text style={[styles.progressValue, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-                    {(() => {
-                      let totalPreguntas = 0;
-                      let preguntasContestadas = 0;
-                      Object.values(modulos).forEach(m => {
-                        m.lecciones.forEach(l => {
-                          l.secciones.forEach(s => {
-                            if (s.preguntas) {
-                              totalPreguntas += s.preguntas.length;
-                              s.preguntas.forEach(p => {
-                                if (preguntasRespondidas[p.id]) preguntasContestadas++;
-                              });
-                            }
+
+                  <View style={[styles.progressItem, {
+                    backgroundColor: isDarkMode ? 'rgba(168,85,247,0.1)' : 'rgba(168,85,247,0.05)',
+                    borderRadius: 16,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: isDarkMode ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.1)'
+                  }]}>
+                    <View style={[styles.progressIconContainer, { 
+                      backgroundColor: isDarkMode ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.15)',
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      marginBottom: 12,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }]}>
+                      <Text style={{ fontSize: 24 }}>📈</Text>
+                    </View>
+                    <Text style={[styles.progressValue, { 
+                      color: isDarkMode ? '#f1f5f9' : '#1e293b',
+                      fontSize: 32,
+                      fontWeight: '800',
+                      marginBottom: 4
+                    }]}>
+                      {(() => {
+                        let totalPreguntas = 0;
+                        let preguntasContestadas = 0;
+                        Object.values(modulos).forEach(m => {
+                          m.lecciones.forEach(l => {
+                            l.secciones.forEach(s => {
+                              if (s.preguntas) {
+                                totalPreguntas += s.preguntas.length;
+                                s.preguntas.forEach(p => {
+                                  if (preguntasRespondidas[p.id]) preguntasContestadas++;
+                                });
+                              }
+                            });
                           });
                         });
-                      });
-                      return totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) + '%' : '0%';
-                    })()}
-                  </Text>
-                  <Text style={[styles.progressLabel, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>Avance</Text>
+                        return totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) + '%' : '0%';
+                      })()}
+                    </Text>
+                    <Text style={[styles.progressLabel, { 
+                      color: isDarkMode ? '#94a3b8' : '#64748b',
+                      fontSize: 12,
+                      fontWeight: '600'
+                    }]}>Avance</Text>
+                  </View>
                 </View>
-              </View>
 
-              <View style={[styles.progressMessage, { backgroundColor: isDarkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.05)', borderLeftWidth: 3, borderLeftColor: '#22c55e', marginTop: 16, padding: 12, borderRadius: 8 }]}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 16, marginRight: 8 }}>✅</Text>
-                  <Text style={[styles.progressMessageText, { color: isDarkMode ? '#86efac' : '#16a34a', flex: 1 }]}>¡Excelente progreso! Sigue adelante en tu camino de discipulado.</Text>
+                <View style={[styles.progressMessage, { 
+                  backgroundColor: isDarkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.08)', 
+                  borderLeftWidth: 4, 
+                  borderLeftColor: '#22c55e', 
+                  marginTop: 20, 
+                  padding: 16, 
+                  borderRadius: 12,
+                  shadowColor: '#22c55e',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2
+                }]}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12
+                    }}>
+                      <Text style={{ fontSize: 18 }}>✅</Text>
+                    </View>
+                    <Text style={[styles.progressMessageText, { 
+                      color: isDarkMode ? '#86efac' : '#16a34a', 
+                      flex: 1,
+                      fontSize: 14,
+                      fontWeight: '600',
+                      lineHeight: 20
+                    }]}>¡Excelente progreso! Sigue adelante en tu camino de discipulado.</Text>
+                  </View>
                 </View>
-              </View>
+              </LinearGradient>
             </View>
 
             <TouchableOpacity
