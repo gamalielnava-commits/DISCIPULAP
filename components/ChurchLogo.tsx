@@ -50,6 +50,7 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
             style={{
               width: size * 0.7,
               height: size * 0.7,
+              opacity: 0.3,
             }}
             resizeMode="contain"
           />
