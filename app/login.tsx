@@ -357,11 +357,11 @@ const styles = StyleSheet.create({
   loginButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#FF6B6B',
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 8,
-    shadowColor: '#8B5CF6',
+    shadowColor: '#FF6B6B',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 16,

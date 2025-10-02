@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useApp } from '@/providers/AppProvider';
 
@@ -36,15 +37,18 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
           backgroundColor: isDark ? '#ffffff10' : '#00000008',
         }
       ]}>
-        <View style={[
-          styles.logoInner,
-          { 
-            width: size, 
-            height: size,
-            backgroundColor: '#8B5CF6',
-            shadowColor: '#8B5CF6',
-          }
-        ]}>
+        <LinearGradient
+          colors={['#FF6B6B', '#4ECDC4']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[
+            styles.logoInner,
+            { 
+              width: size, 
+              height: size,
+            }
+          ]}
+        >
           <Image 
             source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/7rrxwbe7sdjfqelvdfbzt' }}
             style={{
@@ -53,7 +57,7 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
             }}
             resizeMode="contain"
           />
-        </View>
+        </LinearGradient>
       </View>
     </TouchableOpacity>
   );
@@ -74,9 +78,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#FF6B6B',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     elevation: 8,
   },
 
