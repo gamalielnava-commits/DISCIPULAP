@@ -46,11 +46,10 @@ export default function ChurchLogo({ size = 60, forceDark = false }: ChurchLogoP
           }
         ]}>
           <Image 
-            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/w2r3gtdvkqr2rpre1dl8o' }}
+            source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/51gamzq1fc1iut66r0qog' }}
             style={{
-              width: size * 0.65,
-              height: size * 0.65,
-              tintColor: '#ffffff',
+              width: size * 0.85,
+              height: size * 0.85,
             }}
             resizeMode="contain"
           />
