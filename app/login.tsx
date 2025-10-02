@@ -63,6 +63,9 @@ export default function LoginScreen() {
     }
   };
 
+  const LogoContainer = Platform.OS !== 'web' ? BlurView : View;
+  const FormContainer = Platform.OS !== 'web' ? BlurView : View;
+
   return (
     <View style={styles.container}>
       <Stack.Screen 
@@ -79,21 +82,28 @@ export default function LoginScreen() {
         <View style={styles.overlay} />
         
         <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : Platform.OS === 'android' ? 'height' : undefined}
           style={styles.keyboardView}
+          enabled={Platform.OS !== 'web'}
         >
           <ScrollView 
             contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
             showsVerticalScrollIndicator={false}
           >
             <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
-            <BlurView intensity={Platform.OS === 'ios' ? 50 : 60} tint="light" style={styles.logoContainer}>
+            <LogoContainer 
+              {...(Platform.OS !== 'web' ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              style={styles.logoContainer}
+            >
               <ChurchLogo size={isDesktop ? 120 : 100} />
               <Text style={[styles.title, isDesktop && styles.titleDesktop]}>Bienvenido</Text>
               <Text style={[styles.subtitle, isDesktop && styles.subtitleDesktop]}>Inicia sesión en tu cuenta</Text>
-            </BlurView>
+            </LogoContainer>
 
-            <BlurView intensity={Platform.OS === 'ios' ? 50 : 60} tint="light" style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}>
+            <FormContainer 
+              {...(Platform.OS !== 'web' ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}
+            >
             {error ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{error}</Text>
@@ -113,6 +123,8 @@ export default function LoginScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   testID="identifier-input"
+                  accessibilityLabel="Campo de correo o usuario"
+                  accessibilityHint="Ingresa tu correo electrónico o nombre de usuario"
                 />
               </View>
             </View>
@@ -130,8 +142,15 @@ export default function LoginScreen() {
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   testID="password-input"
+                  accessibilityLabel="Campo de contraseña"
+                  accessibilityHint="Ingresa tu contraseña"
                 />
-                <TouchableOpacity onPress={() => setShowPassword(prev => !prev)} accessibilityRole="button" testID="toggle-password-visibility">
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(prev => !prev)} 
+                  accessibilityRole="button" 
+                  testID="toggle-password-visibility"
+                  accessibilityLabel={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
                   {showPassword ? (
                     <EyeOff size={20} color="#6B7280" />
                   ) : (
@@ -146,6 +165,9 @@ export default function LoginScreen() {
               onPress={handleLogin}
               disabled={loading}
               testID="login-button"
+              accessibilityRole="button"
+              accessibilityLabel="Botón de iniciar sesión"
+              accessibilityState={{ disabled: loading }}
             >
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
@@ -163,11 +185,13 @@ export default function LoginScreen() {
             <TouchableOpacity 
               style={styles.registerButton}
               onPress={() => router.push('/register')}
+              accessibilityRole="button"
+              accessibilityLabel="Crear una cuenta nueva"
             >
               <Text style={styles.registerButtonText}>Crear una cuenta</Text>
             </TouchableOpacity>
 
-            </BlurView>
+            </FormContainer>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
