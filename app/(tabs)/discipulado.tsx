@@ -392,40 +392,40 @@ export default function DiscipuladoScreen() {
               marginHorizontal: 16,
               marginTop: 8,
               marginBottom: 8,
-              borderRadius: 20,
+              borderRadius: 16,
               borderWidth: 1,
               overflow: 'hidden',
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.2,
-              shadowRadius: 12,
-              elevation: 8,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
             }]}
             >
               <LinearGradient
                 colors={isDarkMode ? ['#1e293b', '#0f172a'] : ['#ffffff', '#f8fafc']}
-                style={{ padding: 20 }}
+                style={{ padding: 16 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
                   <View style={[styles.progressIconContainer, { 
                     backgroundColor: isDarkMode ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)',
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    marginRight: 16
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    marginRight: 12
                   }]}>
-                    <Text style={{ fontSize: 28 }}>🎓</Text>
+                    <Text style={{ fontSize: 22 }}>🎓</Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.progressTitle, { 
                       color: isDarkMode ? '#f1f5f9' : '#1e293b', 
-                      marginBottom: 4,
-                      fontSize: 20,
+                      marginBottom: 2,
+                      fontSize: 16,
                       fontWeight: '700'
                     }]}>Mi Progreso en Discipulado</Text>
                     <Text style={{ 
                       color: isDarkMode ? '#94a3b8' : '#64748b',
-                      fontSize: 13
+                      fontSize: 12
                     }}>Continúa creciendo en tu fe</Text>
                   </View>
                 </View>
@@ -433,25 +433,25 @@ export default function DiscipuladoScreen() {
                 <View style={styles.progressGrid}>
                   <View style={[styles.progressItem, {
                     backgroundColor: isDarkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)',
-                    borderRadius: 16,
-                    padding: 16,
+                    borderRadius: 12,
+                    padding: 12,
                     borderWidth: 1,
                     borderColor: isDarkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)'
                   }]}>
                     <View style={[styles.progressIconContainer, { 
                       backgroundColor: isDarkMode ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)',
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      marginBottom: 12
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      marginBottom: 8
                     }]}>
-                      <BookOpen size={24} color="#3b82f6" />
+                      <BookOpen size={18} color="#3b82f6" />
                     </View>
                     <Text style={[styles.progressValue, { 
                       color: isDarkMode ? '#f1f5f9' : '#1e293b',
-                      fontSize: 32,
-                      fontWeight: '800',
-                      marginBottom: 4
+                      fontSize: 22,
+                      fontWeight: '700',
+                      marginBottom: 2
                     }]}>
                       {(() => {
                         let leccionesCompletadas = 0;
@@ -466,65 +466,65 @@ export default function DiscipuladoScreen() {
                     </Text>
                     <Text style={[styles.progressLabel, { 
                       color: isDarkMode ? '#94a3b8' : '#64748b',
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600'
                     }]}>Lecciones</Text>
                   </View>
 
                   <View style={[styles.progressItem, {
                     backgroundColor: isDarkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.05)',
-                    borderRadius: 16,
-                    padding: 16,
+                    borderRadius: 12,
+                    padding: 12,
                     borderWidth: 1,
                     borderColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.1)'
                   }]}>
                     <View style={[styles.progressIconContainer, { 
                       backgroundColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)',
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      marginBottom: 12
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      marginBottom: 8
                     }]}>
-                      <Check size={24} color="#22c55e" />
+                      <Check size={18} color="#22c55e" />
                     </View>
                     <Text style={[styles.progressValue, { 
                       color: isDarkMode ? '#f1f5f9' : '#1e293b',
-                      fontSize: 32,
-                      fontWeight: '800',
-                      marginBottom: 4
+                      fontSize: 22,
+                      fontWeight: '700',
+                      marginBottom: 2
                     }]}>
                       {Object.keys(preguntasRespondidas).filter(key => preguntasRespondidas[key]).length}
                     </Text>
                     <Text style={[styles.progressLabel, { 
                       color: isDarkMode ? '#94a3b8' : '#64748b',
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600'
                     }]}>Preguntas</Text>
                   </View>
 
                   <View style={[styles.progressItem, {
                     backgroundColor: isDarkMode ? 'rgba(251,146,60,0.1)' : 'rgba(251,146,60,0.05)',
-                    borderRadius: 16,
-                    padding: 16,
+                    borderRadius: 12,
+                    padding: 12,
                     borderWidth: 1,
                     borderColor: isDarkMode ? 'rgba(251,146,60,0.2)' : 'rgba(251,146,60,0.1)'
                   }]}>
                     <View style={[styles.progressIconContainer, { 
                       backgroundColor: isDarkMode ? 'rgba(251,146,60,0.2)' : 'rgba(251,146,60,0.15)',
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      marginBottom: 12,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      marginBottom: 8,
                       alignItems: 'center',
                       justifyContent: 'center'
                     }]}>
-                      <Text style={{ fontSize: 24 }}>🏆</Text>
+                      <Text style={{ fontSize: 18 }}>🏆</Text>
                     </View>
                     <Text style={[styles.progressValue, { 
                       color: isDarkMode ? '#f1f5f9' : '#1e293b',
-                      fontSize: 32,
-                      fontWeight: '800',
-                      marginBottom: 4
+                      fontSize: 22,
+                      fontWeight: '700',
+                      marginBottom: 2
                     }]}>
                       {(() => {
                         let totalPuntos = 0;
@@ -542,34 +542,34 @@ export default function DiscipuladoScreen() {
                     </Text>
                     <Text style={[styles.progressLabel, { 
                       color: isDarkMode ? '#94a3b8' : '#64748b',
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600'
                     }]}>Puntos</Text>
                   </View>
 
                   <View style={[styles.progressItem, {
                     backgroundColor: isDarkMode ? 'rgba(168,85,247,0.1)' : 'rgba(168,85,247,0.05)',
-                    borderRadius: 16,
-                    padding: 16,
+                    borderRadius: 12,
+                    padding: 12,
                     borderWidth: 1,
                     borderColor: isDarkMode ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.1)'
                   }]}>
                     <View style={[styles.progressIconContainer, { 
                       backgroundColor: isDarkMode ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.15)',
-                      width: 48,
-                      height: 48,
-                      borderRadius: 24,
-                      marginBottom: 12,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      marginBottom: 8,
                       alignItems: 'center',
                       justifyContent: 'center'
                     }]}>
-                      <Text style={{ fontSize: 24 }}>📈</Text>
+                      <Text style={{ fontSize: 18 }}>📈</Text>
                     </View>
                     <Text style={[styles.progressValue, { 
                       color: isDarkMode ? '#f1f5f9' : '#1e293b',
-                      fontSize: 32,
-                      fontWeight: '800',
-                      marginBottom: 4
+                      fontSize: 22,
+                      fontWeight: '700',
+                      marginBottom: 2
                     }]}>
                       {(() => {
                         let totalPreguntas = 0;
@@ -591,7 +591,7 @@ export default function DiscipuladoScreen() {
                     </Text>
                     <Text style={[styles.progressLabel, { 
                       color: isDarkMode ? '#94a3b8' : '#64748b',
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600'
                     }]}>Avance</Text>
                   </View>
@@ -599,37 +599,32 @@ export default function DiscipuladoScreen() {
 
                 <View style={[styles.progressMessage, { 
                   backgroundColor: isDarkMode ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.08)', 
-                  borderLeftWidth: 4, 
+                  borderLeftWidth: 3, 
                   borderLeftColor: '#22c55e', 
-                  marginTop: 20, 
-                  padding: 16, 
-                  borderRadius: 12,
-                  shadowColor: '#22c55e',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  elevation: 2
+                  marginTop: 12, 
+                  padding: 12, 
+                  borderRadius: 8
                 }]}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
                       backgroundColor: isDarkMode ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.15)',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      marginRight: 12
+                      marginRight: 8
                     }}>
-                      <Text style={{ fontSize: 18 }}>✅</Text>
+                      <Text style={{ fontSize: 14 }}>✅</Text>
                     </View>
                     <Text style={[styles.progressMessageText, { 
                       color: isDarkMode ? '#86efac' : '#16a34a', 
                       flex: 1,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: '600',
-                      lineHeight: 20
-                    }]}>¡Excelente progreso! Sigue adelante en tu camino de discipulado.</Text>
+                      lineHeight: 16
+                    }]}>¡Excelente progreso! Sigue adelante.</Text>
                   </View>
                 </View>
               </LinearGradient>
