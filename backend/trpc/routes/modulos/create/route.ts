@@ -5,17 +5,32 @@ import { generateObject } from '@rork/toolkit-sdk';
 export const createModuloProcedure = publicProcedure
   .input(
     z.object({
-      guideContent: z.string(),
-      guideImages: z.array(z.object({
-        type: z.literal('image'),
-        image: z.string(),
-      })).optional(),
+      fileName: z.string(),
+      fileContent: z.string().optional(),
+      fileBase64: z.string().optional(),
+      fileMimeType: z.string(),
       userId: z.string(),
     })
   )
   .mutation(async ({ input }) => {
     try {
       console.log('Iniciando creación de módulo con IA...');
+      console.log('Archivo:', input.fileName, 'Tipo:', input.fileMimeType);
+
+      let contentParts: any[] = [];
+
+      if (input.fileContent) {
+        contentParts.push({
+          type: 'text',
+          text: `Contenido del archivo ${input.fileName}:\n\n${input.fileContent}`,
+        });
+      } else if (input.fileBase64) {
+        const mimeType = input.fileMimeType || 'application/pdf';
+        contentParts.push({
+          type: 'image',
+          image: `data:${mimeType};base64,${input.fileBase64}`,
+        });
+      }
 
       const messages: any[] = [
         {
@@ -23,12 +38,12 @@ export const createModuloProcedure = publicProcedure
           content: [
             {
               type: 'text',
-              text: `Analiza esta guía de discipulado y extrae TODA la información para crear un módulo completo.
+              text: `Analiza este archivo de guía de discipulado (${input.fileName}) y extrae TODA la información para crear un módulo completo.
 
 IMPORTANTE: Debes seguir EXACTAMENTE el mismo formato, estilo y organización que los módulos existentes.
 
-La guía contiene:
-${input.guideContent}
+Si es una imagen o PDF, primero extrae TODO el texto visible.
+Luego analiza el contenido y estructura la información.
 
 Extrae y estructura la información en el siguiente formato JSON (SIGUE ESTE FORMATO EXACTAMENTE):
 {
@@ -176,7 +191,7 @@ REGLAS CRÍTICAS (NO OMITIR NINGUNA):
 
 8. IDs: Se generarán automáticamente, no los incluyas en el JSON`,
             },
-            ...(input.guideImages || []),
+            ...contentParts,
           ],
         },
       ];

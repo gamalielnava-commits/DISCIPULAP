@@ -5,13 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import { Plus, BookOpen, Edit, Trash2, Upload, FileText } from 'lucide-react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppHeader from '@/components/AppHeader';
@@ -28,8 +26,7 @@ export default function GestionModulosScreen() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<any>(null);
-  const [selectedImages, setSelectedImages] = useState<any[]>([]);
-  const [extractedText, setExtractedText] = useState('');
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
 
   useEffect(() => {
     loadModulos();
@@ -49,24 +46,18 @@ export default function GestionModulosScreen() {
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        type: ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/*'],
         copyToCacheDirectory: true,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const file = result.assets[0];
         setSelectedFile(file);
-
-        if (file.mimeType === 'text/plain' && file.uri) {
-          const content = await FileSystem.readAsStringAsync(file.uri);
-          setExtractedText(content);
-        } else {
-          Alert.alert(
-            'Archivo seleccionado',
-            'Por favor, copia y pega el contenido de la guía en el campo de texto a continuación.',
-            [{ text: 'OK' }]
-          );
-        }
+        Alert.alert(
+          'Archivo seleccionado',
+          `${file.name} está listo para procesar. Presiona "Crear Módulo con IA" para continuar.`,
+          [{ text: 'OK' }]
+        );
       }
     } catch (error) {
       console.error('Error seleccionando documento:', error);
@@ -74,41 +65,34 @@ export default function GestionModulosScreen() {
     }
   };
 
-  const pickImages = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images' as any,
-        allowsMultipleSelection: true,
-        quality: 0.8,
-        base64: true,
-      });
 
-      if (!result.canceled && result.assets) {
-        setSelectedImages(result.assets);
-      }
-    } catch (error) {
-      console.error('Error seleccionando imágenes:', error);
-      Alert.alert('Error', 'No se pudieron seleccionar las imágenes');
-    }
-  };
 
   const createModuloWithAI = async () => {
-    if (!extractedText.trim()) {
-      Alert.alert('Error', 'Por favor, proporciona el contenido de la guía');
+    if (!selectedFile) {
+      Alert.alert('Error', 'Por favor, selecciona un archivo primero');
       return;
     }
 
     setIsCreating(true);
+    setIsProcessingFile(true);
 
     try {
-      const guideImages = selectedImages.map(img => ({
-        type: 'image' as const,
-        image: `data:${img.mimeType || 'image/jpeg'};base64,${img.base64}`,
-      }));
+      let fileContent = '';
+      let fileBase64 = '';
+
+      if (selectedFile.mimeType === 'text/plain' && selectedFile.uri) {
+        fileContent = await FileSystem.readAsStringAsync(selectedFile.uri);
+      } else if (selectedFile.uri) {
+        fileBase64 = await FileSystem.readAsStringAsync(selectedFile.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
 
       const result = await trpcClient.modulos.create.mutate({
-        guideContent: extractedText,
-        guideImages: guideImages.length > 0 ? guideImages : undefined,
+        fileName: selectedFile.name,
+        fileContent: fileContent || undefined,
+        fileBase64: fileBase64 || undefined,
+        fileMimeType: selectedFile.mimeType,
         userId: user?.id || 'admin',
       });
 
@@ -126,8 +110,6 @@ export default function GestionModulosScreen() {
               onPress: () => {
                 setShowCreateForm(false);
                 setSelectedFile(null);
-                setSelectedImages([]);
-                setExtractedText('');
               },
             },
           ]
@@ -140,6 +122,7 @@ export default function GestionModulosScreen() {
       Alert.alert('Error', 'Ocurrió un error al crear el módulo');
     } finally {
       setIsCreating(false);
+      setIsProcessingFile(false);
     }
   };
 
@@ -178,22 +161,21 @@ export default function GestionModulosScreen() {
           onBackPress={() => {
             setShowCreateForm(false);
             setSelectedFile(null);
-            setSelectedImages([]);
-            setExtractedText('');
           }}
         />
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={[styles.card, { backgroundColor: isDarkMode ? '#1e293b' : '#ffffff' }]}>
             <Text style={[styles.sectionTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-              📄 Paso 1: Sube la guía
+              📄 Sube la guía del módulo
             </Text>
             <Text style={[styles.sectionDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>
-              Selecciona un archivo PDF, Word o de texto con la guía de discipulado
+              Selecciona un archivo (PDF, Word, imagen o texto) con la guía de discipulado. La IA extraerá automáticamente todo el contenido.
             </Text>
 
             <TouchableOpacity
               style={[styles.uploadButton, { backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb' }]}
               onPress={pickDocument}
+              disabled={isCreating}
             >
               <Upload size={20} color="#ffffff" />
               <Text style={styles.uploadButtonText}>
@@ -209,55 +191,19 @@ export default function GestionModulosScreen() {
                 </Text>
               </View>
             )}
-
-            <TouchableOpacity
-              style={[styles.uploadButton, { backgroundColor: isDarkMode ? '#8b5cf6' : '#7c3aed', marginTop: 12 }]}
-              onPress={pickImages}
-            >
-              <Upload size={20} color="#ffffff" />
-              <Text style={styles.uploadButtonText}>
-                {selectedImages.length > 0 ? `${selectedImages.length} imagen(es) seleccionada(s)` : 'Agregar imágenes (opcional)'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1e293b' : '#ffffff' }]}>
-            <Text style={[styles.sectionTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>
-              ✍️ Paso 2: Contenido de la guía
-            </Text>
-            <Text style={[styles.sectionDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>
-              Copia y pega el contenido completo de la guía aquí
-            </Text>
-
-            <TextInput
-              style={[
-                styles.textArea,
-                {
-                  backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
-                  color: isDarkMode ? '#e2e8f0' : '#1e293b',
-                  borderColor: isDarkMode ? '#334155' : '#cbd5e1',
-                },
-              ]}
-              placeholder="Pega aquí el contenido de la guía de discipulado..."
-              placeholderTextColor={isDarkMode ? '#64748b' : '#94a3b8'}
-              multiline
-              numberOfLines={15}
-              value={extractedText}
-              onChangeText={setExtractedText}
-              textAlignVertical="top"
-            />
           </View>
 
           <View style={[styles.card, { backgroundColor: isDarkMode ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.05)' }]}>
             <Text style={[styles.infoTitle, { color: '#22c55e' }]}>
-              🤖 La IA extraerá automáticamente:
+              🤖 La IA procesará automáticamente:
             </Text>
             <Text style={[styles.infoText, { color: isDarkMode ? '#86efac' : '#16a34a' }]}>
+              • Extracción de texto de PDFs, imágenes y documentos{'\n'}
               • Todas las preguntas de la guía{'\n'}
               • Estructura de lecciones y secciones{'\n'}
               • Versículos y referencias bíblicas{'\n'}
-              • Objetivos y desafíos{'\n'}
-              • Principios y enseñanzas
+              • Objetivos, desafíos y principios{'\n'}
+              • Formato idéntico a los módulos existentes
             </Text>
           </View>
 
@@ -266,16 +212,18 @@ export default function GestionModulosScreen() {
               styles.createButton,
               {
                 backgroundColor: isCreating ? '#94a3b8' : '#22c55e',
-                opacity: isCreating || !extractedText.trim() ? 0.5 : 1,
+                opacity: isCreating || !selectedFile ? 0.5 : 1,
               },
             ]}
             onPress={createModuloWithAI}
-            disabled={isCreating || !extractedText.trim()}
+            disabled={isCreating || !selectedFile}
           >
             {isCreating ? (
               <>
                 <ActivityIndicator color="#ffffff" size="small" />
-                <Text style={styles.createButtonText}>Creando módulo...</Text>
+                <Text style={styles.createButtonText}>
+                  {isProcessingFile ? 'Procesando archivo...' : 'Creando módulo...'}
+                </Text>
               </>
             ) : (
               <>
