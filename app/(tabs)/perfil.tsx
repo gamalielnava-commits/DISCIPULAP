@@ -11,7 +11,9 @@ import {
   TextInput,
   Alert,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { 
   User, 
   Moon, 
@@ -23,12 +25,14 @@ import {
   Phone,
   Edit2,
   X,
-  Check
+  Check,
+  Camera
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useApp } from '@/providers/AppProvider';
 import Colors from '@/constants/colors';
 import AppHeader from '@/components/AppHeader';
+import { pickImageFromLibrary, takePhoto, uploadImageToFirebase, showImagePickerOptions } from '@/utils/imageUpload';
 
 interface UserData {
   id: string;
@@ -61,6 +65,7 @@ export default function PerfilScreen() {
     fechaNacimiento: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
 
   const colors = isDarkMode ? Colors.dark : Colors.light;
@@ -208,9 +213,64 @@ export default function PerfilScreen() {
       />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.header, { backgroundColor: colors.surfaceLight }]}>
-          <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
-            <User size={40} color="#fff" />
-          </View>
+          <TouchableOpacity 
+            style={[styles.avatarContainer, { backgroundColor: colors.primary }]}
+            onPress={() => {
+              showImagePickerOptions(
+                async () => {
+                  const result = await pickImageFromLibrary();
+                  if (result && result.uri && user) {
+                    setUploadingImage(true);
+                    try {
+                      const downloadUrl = await uploadImageToFirebase(
+                        result.uri,
+                        `users/${user.id}/avatar.jpg`
+                      );
+                      await updateUser({ photoURL: downloadUrl });
+                    } catch (error) {
+                      console.error('Error uploading avatar:', error);
+                      Alert.alert('Error', 'No se pudo subir la imagen');
+                    } finally {
+                      setUploadingImage(false);
+                    }
+                  }
+                },
+                async () => {
+                  const result = await takePhoto();
+                  if (result && result.uri && user) {
+                    setUploadingImage(true);
+                    try {
+                      const downloadUrl = await uploadImageToFirebase(
+                        result.uri,
+                        `users/${user.id}/avatar.jpg`
+                      );
+                      await updateUser({ photoURL: downloadUrl });
+                    } catch (error) {
+                      console.error('Error uploading avatar:', error);
+                      Alert.alert('Error', 'No se pudo subir la imagen');
+                    } finally {
+                      setUploadingImage(false);
+                    }
+                  }
+                }
+              );
+            }}
+          >
+            {uploadingImage ? (
+              <ActivityIndicator size="large" color="#fff" />
+            ) : user?.photoURL ? (
+              <Image 
+                source={{ uri: user.photoURL }} 
+                style={styles.avatarImage}
+                contentFit="cover"
+              />
+            ) : (
+              <User size={40} color="#fff" />
+            )}
+            <View style={[styles.cameraIconContainer, { backgroundColor: colors.primary }]}>
+              <Camera size={16} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <View style={styles.userNameContainer}>
             <Text style={[styles.userName, { color: colors.text }]}>
               {userData?.name || (user ? `${user.nombre} ${user.apellido}`.trim() : 'Cargando...')}
@@ -489,6 +549,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    position: 'relative',
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  cameraIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   userName: {
     fontSize: 24,

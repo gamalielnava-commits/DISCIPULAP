@@ -11,7 +11,9 @@ import {
   Platform,
   KeyboardAvoidingView,
   Share,
+  ActivityIndicator,
 } from "react-native";
+import { Image } from 'expo-image';
 import {
   Bell,
   Plus,
@@ -29,6 +31,7 @@ import {
 import { useApp } from "@/providers/AppProvider";
 import Colors from "@/constants/colors";
 import AppHeader from "@/components/AppHeader";
+import { pickImageFromLibrary, takePhoto, uploadImageToFirebase, showImagePickerOptions } from '@/utils/imageUpload';
 
 interface AnnouncementForm {
   titulo: string;
@@ -60,6 +63,7 @@ export default function AnunciosScreen() {
     destinatarios: "todos",
     prioridad: "normal",
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
 
   const filteredAnnouncements = announcements.filter((a) => {
@@ -318,6 +322,14 @@ export default function AnunciosScreen() {
                 {announcement.contenido}
               </Text>
 
+              {announcement.imagen && (
+                <Image
+                  source={{ uri: announcement.imagen }}
+                  style={styles.announcementImage}
+                  contentFit="cover"
+                />
+              )}
+
               <View style={styles.announcementFooter}>
                 <View style={styles.destinatariosInfo}>
                   <Users size={14} color={colors.tabIconDefault} />
@@ -474,14 +486,76 @@ export default function AnunciosScreen() {
                 </View>
               </View>
 
+              {form.imagen && (
+                <View style={styles.imagePreviewContainer}>
+                  <Image
+                    source={{ uri: form.imagen }}
+                    style={styles.imagePreview}
+                    contentFit="cover"
+                  />
+                  <TouchableOpacity
+                    style={[styles.removeImageButton, { backgroundColor: colors.danger }]}
+                    onPress={() => setForm({ ...form, imagen: undefined })}
+                  >
+                    <X size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
               <TouchableOpacity
                 style={[styles.imageButton, { borderColor: colors.border }]}
-                onPress={() => Alert.alert("Info", "Función de imagen próximamente")}
+                onPress={() => {
+                  showImagePickerOptions(
+                    async () => {
+                      const result = await pickImageFromLibrary();
+                      if (result && result.uri) {
+                        setUploadingImage(true);
+                        try {
+                          const downloadUrl = await uploadImageToFirebase(
+                            result.uri,
+                            `announcements/${Date.now()}.jpg`
+                          );
+                          setForm({ ...form, imagen: downloadUrl });
+                        } catch (error) {
+                          console.error('Error uploading image:', error);
+                          Alert.alert('Error', 'No se pudo subir la imagen');
+                        } finally {
+                          setUploadingImage(false);
+                        }
+                      }
+                    },
+                    async () => {
+                      const result = await takePhoto();
+                      if (result && result.uri) {
+                        setUploadingImage(true);
+                        try {
+                          const downloadUrl = await uploadImageToFirebase(
+                            result.uri,
+                            `announcements/${Date.now()}.jpg`
+                          );
+                          setForm({ ...form, imagen: downloadUrl });
+                        } catch (error) {
+                          console.error('Error uploading image:', error);
+                          Alert.alert('Error', 'No se pudo subir la imagen');
+                        } finally {
+                          setUploadingImage(false);
+                        }
+                      }
+                    }
+                  );
+                }}
+                disabled={uploadingImage}
               >
-                <ImageIcon size={24} color={colors.tabIconDefault} />
-                <Text style={[styles.imageButtonText, { color: colors.tabIconDefault }]}>
-                  Agregar imagen (opcional)
-                </Text>
+                {uploadingImage ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <>
+                    <ImageIcon size={24} color={colors.tabIconDefault} />
+                    <Text style={[styles.imageButtonText, { color: colors.tabIconDefault }]}>
+                      {form.imagen ? 'Cambiar imagen' : 'Agregar imagen (opcional)'}
+                    </Text>
+                  </>
+                )}
               </TouchableOpacity>
             </ScrollView>
 
@@ -730,6 +804,31 @@ const styles = StyleSheet.create({
   },
   imageButtonText: {
     fontSize: 14,
+  },
+  announcementImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  imagePreviewContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalFooter: {
     flexDirection: "row",

@@ -32,6 +32,7 @@ interface Group {
   hora?: string;
   zonaId?: string;
   zonaNombre?: string;
+  imagen?: string;
 }
 
 interface Attendance {

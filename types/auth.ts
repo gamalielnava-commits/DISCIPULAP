@@ -18,6 +18,7 @@ export interface User {
   fechaIngreso?: string;
   notas?: string;
   fotoPerfil?: string;
+  photoURL?: string;
   createdAt: Date;
   updatedAt: Date;
 }
