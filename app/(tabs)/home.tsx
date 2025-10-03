@@ -302,25 +302,25 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.progressStats}>
-              <View style={styles.progressStatItem}>
+              <View style={[styles.progressStatItem, { backgroundColor: colors.background, borderRadius: 12, padding: 12 }]}>
                 <View style={[styles.statIconSmall, { backgroundColor: '#3b82f6' + '20' }]}>
-                  <BookOpen size={20} color="#3b82f6" />
+                  <BookOpen size={18} color="#3b82f6" />
                 </View>
                 <Text style={[styles.statValueSmall, { color: colors.text }]}>3</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Lecciones</Text>
               </View>
               
-              <View style={styles.progressStatItem}>
+              <View style={[styles.progressStatItem, { backgroundColor: colors.background, borderRadius: 12, padding: 12 }]}>
                 <View style={[styles.statIconSmall, { backgroundColor: '#10b981' + '20' }]}>
-                  <Check size={20} color="#10b981" />
+                  <Check size={18} color="#10b981" />
                 </View>
                 <Text style={[styles.statValueSmall, { color: colors.text }]}>25</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Preguntas</Text>
               </View>
               
-              <View style={styles.progressStatItem}>
+              <View style={[styles.progressStatItem, { backgroundColor: colors.background, borderRadius: 12, padding: 12 }]}>
                 <View style={[styles.statIconSmall, { backgroundColor: '#f59e0b' + '20' }]}>
-                  <TrendingUp size={20} color="#f59e0b" />
+                  <TrendingUp size={18} color="#f59e0b" />
                 </View>
                 <Text style={[styles.statValueSmall, { color: colors.text }]}>375</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Puntos</Text>
@@ -778,26 +778,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    gap: 8,
   },
   progressStatItem: {
     alignItems: 'center',
     flex: 1,
   },
   statIconSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   statValueSmall: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabelSmall: {
-    fontSize: 12,
+    fontSize: 11,
+    textAlign: 'center',
   },
   progressBarSection: {
     marginBottom: 20,
