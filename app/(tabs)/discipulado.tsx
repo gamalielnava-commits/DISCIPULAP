@@ -10,13 +10,14 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ChevronRight, ChevronLeft, BookOpen, Check } from 'lucide-react-native';
+import { ChevronRight, ChevronLeft, BookOpen, Check, Settings } from 'lucide-react-native';
 import { moduloSantidad, type Pregunta, type Modulo } from '@/constants/modulo-santidad';
 import { moduloEspirituSanto } from '@/constants/modulo-espiritu-santo';
 import Colors from '@/constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import AppHeader from '@/components/AppHeader';
 import { useApp } from '@/providers/AppProvider';
+import { useRouter } from 'expo-router';
 
 type Respuesta = {
   [key: string]: string;
@@ -38,8 +39,9 @@ type UserProgress = {
 };
 
 export default function DiscipuladoScreen() {
-  const { isDarkMode, members } = useApp();
+  const { isDarkMode, members, user } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
+  const router = useRouter();
 
   const [moduloActivo, setModuloActivo] = useState<string | null>(null);
   const [leccionActiva, setLeccionActiva] = useState<string | null>(null);
@@ -311,6 +313,17 @@ export default function DiscipuladoScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <AppHeader title="Discipulado" subtitle="Crecimiento espiritual" />
+        
+        {user?.role === 'admin' && (
+          <TouchableOpacity
+            style={[styles.adminButton, { backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb' }]}
+            onPress={() => router.push('/gestion-modulos')}
+            testID="admin-gestion-modulos"
+          >
+            <Settings size={20} color="#ffffff" />
+            <Text style={styles.adminButtonText}>Gestionar Módulos</Text>
+          </TouchableOpacity>
+        )}
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false} testID="discipulado-scroll">
           <View style={[styles.rankingCard, {
             backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
@@ -1258,4 +1271,24 @@ const styles = StyleSheet.create({
   progressLabel: { fontSize: 13 },
   progressMessage: { marginTop: 16 },
   progressMessageText: { fontSize: 14, fontWeight: '500' },
+  adminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  adminButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });

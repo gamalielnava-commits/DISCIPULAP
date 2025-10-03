@@ -33,8 +33,8 @@ function RootLayoutNav() {
     if (!isAuthenticated && inAuthGroup) {
       // User is not authenticated but trying to access protected routes
       router.replace('/login');
-    } else if (isAuthenticated && !inAuthGroup && segments[0] !== 'modal') {
-      // User is authenticated but not in protected routes (and not in modal)
+    } else if (isAuthenticated && !inAuthGroup && segments[0] !== 'modal' && segments[0] !== 'gestion-modulos') {
+      // User is authenticated but not in protected routes (and not in modal or gestion-modulos)
       router.replace('/home');
     }
   }, [isAuthenticated, segments, loading, router]);
@@ -53,6 +53,12 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="register" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="gestion-modulos" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
       <Stack.Screen 
         name="modal" 
         options={{ 
