@@ -25,12 +25,12 @@ export const createModuloProcedure = publicProcedure
               type: 'text',
               text: `Analiza esta guía de discipulado y extrae TODA la información para crear un módulo completo.
 
-IMPORTANTE: Debes extraer TODAS las preguntas que encuentres en la guía, sin excepción.
+IMPORTANTE: Debes seguir EXACTAMENTE el mismo formato, estilo y organización que los módulos existentes.
 
 La guía contiene:
 ${input.guideContent}
 
-Extrae y estructura la información en el siguiente formato JSON:
+Extrae y estructura la información en el siguiente formato JSON (SIGUE ESTE FORMATO EXACTAMENTE):
 {
   "titulo": "Título del módulo",
   "descripcion": "Descripción breve del módulo",
@@ -38,42 +38,143 @@ Extrae y estructura la información en el siguiente formato JSON:
     {
       "numero": 1,
       "titulo": "Título de la lección",
-      "subtitulo": "Referencia bíblica",
-      "versiculoClave": "Versículo principal",
+      "subtitulo": "Referencia bíblica (ej: Génesis 39)",
+      "versiculoClave": "Referencia del versículo (ej: Génesis 39:9)",
       "objetivo": "Objetivo de la lección",
-      "principios": ["Principio 1", "Principio 2"],
+      "principios": ["Principio 1", "Principio 2", "Principio 3"],
       "secciones": [
         {
-          "tipo": "introduccion" | "conocer" | "reflexionar" | "examinar" | "aplicar" | "conclusion",
-          "titulo": "Título de la sección",
-          "contenido": "Contenido de la sección",
+          "tipo": "introduccion",
+          "titulo": "Introducción",
+          "contenido": "Resumen narrativo de la historia bíblica",
+          "preguntas": [],
+          "versiculoClave": "Referencia del versículo"
+        },
+        {
+          "tipo": "conocer",
+          "titulo": "CONOCER",
+          "contenido": "Descripción de esta sección",
           "preguntas": [
             {
-              "tipo": "abierta" | "reflexion",
-              "texto": "Texto de la pregunta",
+              "tipo": "abierta",
+              "texto": "¿Qué sucede en esta historia?",
+              "puntos": 15
+            },
+            {
+              "tipo": "abierta",
+              "texto": "¿Quiénes son los personajes principales y cuál es su papel?",
+              "puntos": 15
+            },
+            {
+              "tipo": "abierta",
+              "texto": "¿Cuál es el mensaje central del pasaje?",
               "puntos": 15
             }
           ],
-          "versiculosApoyo": ["Versículo 1", "Versículo 2"],
-          "versiculoClave": "Versículo clave",
-          "objetivo": "Objetivo específico",
-          "desafio": "Desafío de la semana",
-          "preguntasProfundizar": ["Pregunta 1", "Pregunta 2"]
+          "versiculosApoyo": ["Versículo 1", "Versículo 2"]
+        },
+        {
+          "tipo": "reflexionar",
+          "titulo": "REFLEXIONAR",
+          "contenido": "Descripción de esta sección",
+          "preguntas": [
+            {
+              "tipo": "reflexion",
+              "texto": "¿Qué aprendemos sobre Dios y sobre el pecado?",
+              "puntos": 15
+            },
+            {
+              "tipo": "reflexion",
+              "texto": "¿Qué principios espirituales se pueden extraer de esta historia?",
+              "puntos": 15
+            },
+            {
+              "tipo": "reflexion",
+              "texto": "¿En qué otros pasajes vemos esta enseñanza?",
+              "puntos": 15
+            }
+          ],
+          "versiculosApoyo": ["Versículo 1", "Versículo 2"]
+        },
+        {
+          "tipo": "examinar",
+          "titulo": "EXAMINAR",
+          "contenido": "Descripción de esta sección",
+          "preguntas": [
+            {
+              "tipo": "abierta",
+              "texto": "¿Cómo se relaciona esta historia con mi vida hoy?",
+              "puntos": 15
+            },
+            {
+              "tipo": "abierta",
+              "texto": "¿En qué áreas de mi vida necesito aplicar esta enseñanza?",
+              "puntos": 15
+            }
+          ],
+          "versiculosApoyo": ["Versículo 1", "Versículo 2"]
+        },
+        {
+          "tipo": "aplicar",
+          "titulo": "APLICAR",
+          "contenido": "Descripción de esta sección",
+          "preguntas": [
+            {
+              "tipo": "abierta",
+              "texto": "¿Qué acción específica puedo tomar en base a esta enseñanza?",
+              "puntos": 20
+            },
+            {
+              "tipo": "abierta",
+              "texto": "¿Cómo puedo compartir esta verdad con otros?",
+              "puntos": 20
+            }
+          ],
+          "versiculosApoyo": ["Versículo 1", "Versículo 2"]
+        },
+        {
+          "tipo": "conclusion",
+          "titulo": "Conclusión",
+          "contenido": "Resumen de la enseñanza principal",
+          "preguntas": [],
+          "desafio": "Desafío práctico para la semana",
+          "preguntasProfundizar": [
+            "Pregunta reflexiva 1",
+            "Pregunta reflexiva 2"
+          ]
         }
       ],
-      "desafioSemanal": "Desafío semanal"
+      "desafioSemanal": "Mismo desafío que en la conclusión"
     }
   ]
 }
 
-REGLAS IMPORTANTES:
-1. Extrae TODAS las preguntas que encuentres en la guía
-2. Clasifica cada pregunta como "abierta" o "reflexion" según su naturaleza
-3. Asigna 15 puntos a preguntas de conocer/reflexionar/examinar y 20 puntos a preguntas de aplicar
-4. Mantén el orden y estructura original de la guía
-5. Incluye todos los versículos, objetivos y desafíos mencionados
-6. Si hay múltiples lecciones, créalas todas
-7. Genera IDs únicos para cada elemento usando el formato: "leccion-{numero}", "seccion-{tipo}-{numero}", "pregunta-{numero}"`,
+REGLAS CRÍTICAS (NO OMITIR NINGUNA):
+1. ESTRUCTURA DE SECCIONES: Cada lección DEBE tener exactamente 6 secciones en este orden:
+   - introduccion (sin preguntas, con versiculoClave)
+   - conocer (3 preguntas de 15 puntos cada una)
+   - reflexionar (3 preguntas de 15 puntos cada una)
+   - examinar (2 preguntas de 15 puntos cada una)
+   - aplicar (2 preguntas de 20 puntos cada una)
+   - conclusion (sin preguntas, con desafio y preguntasProfundizar)
+
+2. PREGUNTAS: Extrae TODAS las preguntas de la guía y distribúyelas en las secciones apropiadas
+   - Preguntas de conocer/reflexionar/examinar: 15 puntos
+   - Preguntas de aplicar: 20 puntos
+   - Tipo "abierta" para preguntas de conocer, examinar y aplicar
+   - Tipo "reflexion" para preguntas de reflexionar
+
+3. TÍTULOS: Usa MAYÚSCULAS para secciones principales (CONOCER, REFLEXIONAR, EXAMINAR, APLICAR)
+
+4. PRINCIPIOS: Cada lección debe tener 3 principios claros y concisos
+
+5. VERSÍCULOS: Incluye versiculosApoyo en cada sección (excepto introducción y conclusión)
+
+6. DESAFÍO: El desafioSemanal debe ser idéntico al desafio en la sección de conclusión
+
+7. CONTENIDO: Mantén el contenido claro, conciso y fiel a la guía original
+
+8. IDs: Se generarán automáticamente, no los incluyas en el JSON`,
             },
             ...(input.guideImages || []),
           ],
