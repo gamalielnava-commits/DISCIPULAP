@@ -553,7 +553,7 @@ Formato de respuesta en JSON:
           }
         }}
       >
-        {series.imagenUrl ? (
+        {series.imagenUrl && series.imagenUrl.trim() !== '' ? (
           <Image source={{ uri: series.imagenUrl }} style={styles.seriesImage} />
         ) : (
           <View style={[styles.seriesImagePlaceholder, { backgroundColor: colors.primary + '20' }]}>
@@ -619,7 +619,7 @@ Formato de respuesta en JSON:
         style={[styles.card, { backgroundColor: colors.surface }]}
         onPress={() => setSelectedSermon(sermon)}
       >
-        {sermon.imagenUrl ? (
+        {sermon.imagenUrl && sermon.imagenUrl.trim() !== '' ? (
           <Image source={{ uri: sermon.imagenUrl }} style={styles.sermonThumbnail} />
         ) : (
           <View style={[styles.sermonThumbnailPlaceholder, { backgroundColor: colors.primary + '20' }]}>
@@ -802,7 +802,7 @@ Formato de respuesta en JSON:
             // Vista de sermones dentro de una serie
             <>
               <View style={[styles.seriesHeader, { backgroundColor: colors.surface }]}>
-                {viewingSeries.imagenUrl ? (
+                {viewingSeries.imagenUrl && viewingSeries.imagenUrl.trim() !== '' ? (
                   <Image source={{ uri: viewingSeries.imagenUrl }} style={styles.seriesHeaderImage} />
                 ) : (
                   <View style={[styles.seriesHeaderImagePlaceholder, { backgroundColor: colors.primary + '20' }]}>
@@ -993,7 +993,7 @@ Formato de respuesta en JSON:
                 </TouchableOpacity>
               </View>
 
-              {seriesImage && (
+              {seriesImage && seriesImage.trim() !== '' && (
                 <Image source={{ uri: seriesImage }} style={styles.previewImage} />
               )}
             </ScrollView>
@@ -1165,7 +1165,7 @@ Formato de respuesta en JSON:
                 </View>
               </View>
 
-              {sermonImage && (
+              {sermonImage && sermonImage.trim() !== '' && (
                 <Image source={{ uri: sermonImage }} style={styles.previewImage} />
               )}
 
@@ -1367,7 +1367,7 @@ Formato de respuesta en JSON:
                 </View>
               </View>
 
-              {sermonImage && (
+              {sermonImage && sermonImage.trim() !== '' && (
                 <Image source={{ uri: sermonImage }} style={styles.previewImage} />
               )}
             </ScrollView>
@@ -1467,7 +1467,7 @@ Formato de respuesta en JSON:
             </View>
 
             <ScrollView style={styles.modalBody}>
-              {selectedSermon?.imagenUrl ? (
+              {selectedSermon?.imagenUrl && selectedSermon.imagenUrl.trim() !== '' ? (
                 <Image source={{ uri: selectedSermon.imagenUrl }} style={styles.previewImage} />
               ) : null}
 
