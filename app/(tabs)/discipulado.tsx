@@ -41,20 +41,30 @@ export default function DiscipuladoScreen() {
   const { isDarkMode, members } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
 
-  const [moduloActivo, setModuloActivo] = useState<'santidad' | 'espiritu' | null>(null);
+  const [moduloActivo, setModuloActivo] = useState<string | null>(null);
   const [leccionActiva, setLeccionActiva] = useState<string | null>(null);
   const [seccionActiva, setSeccionActiva] = useState<string | null>(null);
   const [respuestas, setRespuestas] = useState<Respuesta>({});
   const [preguntasRespondidas, setPreguntasRespondidas] = useState<PreguntaRespondida>({});
   const [topUsuarios, setTopUsuarios] = useState<UserProgress[]>([]);
+  const [modulosPersonalizados, setModulosPersonalizados] = useState<Modulo[]>([]);
 
-  const modulos: Record<'santidad' | 'espiritu', Modulo> = {
+  const modulosBase: Record<'santidad' | 'espiritu', Modulo> = {
     santidad: moduloSantidad,
     espiritu: moduloEspirituSanto,
   };
 
+  const modulos: Record<string, Modulo> = {
+    ...modulosBase,
+    ...modulosPersonalizados.reduce((acc, modulo) => {
+      acc[modulo.id] = modulo;
+      return acc;
+    }, {} as Record<string, Modulo>),
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarModulosPersonalizados();
   }, []);
 
   useEffect(() => {
@@ -175,6 +185,18 @@ export default function DiscipuladoScreen() {
     }
   };
 
+  const cargarModulosPersonalizados = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('custom_modulos');
+      if (stored) {
+        const customModulos = JSON.parse(stored) as Modulo[];
+        setModulosPersonalizados(customModulos);
+      }
+    } catch (error) {
+      console.error('Error cargando módulos personalizados:', error);
+    }
+  };
+
   const cargarDatos = async () => {
     try {
       const respuestasGuardadas = await AsyncStorage.getItem('discipulado_respuestas');
@@ -191,12 +213,12 @@ export default function DiscipuladoScreen() {
       if (estadoGuardado) {
         try {
           const estado = JSON.parse(estadoGuardado) as {
-            moduloActivo?: 'santidad' | 'espiritu' | null;
+            moduloActivo?: string | null;
             leccionActiva?: string | null;
             seccionActiva?: string | null;
           };
-          if (estado.moduloActivo && (estado.moduloActivo === 'santidad' || estado.moduloActivo === 'espiritu')) {
-            const modulo = modulos[estado.moduloActivo];
+          if (estado.moduloActivo) {
+            const modulo = modulos[estado.moduloActivo] || modulosBase[estado.moduloActivo as 'santidad' | 'espiritu'];
             const leccionValida = modulo.lecciones.find((l: any) => l.id === estado.leccionActiva);
 
             if (leccionValida) {
@@ -643,10 +665,10 @@ export default function DiscipuladoScreen() {
                 <Text style={styles.moduloEmoji}>✨</Text>
               </View>
               <View style={styles.moduloInfo}>
-                <Text style={[styles.moduloTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>{modulos.santidad.titulo}</Text>
-                <Text style={[styles.moduloDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>{modulos.santidad.descripcion}</Text>
+                <Text style={[styles.moduloTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>{modulosBase.santidad.titulo}</Text>
+                <Text style={[styles.moduloDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>{modulosBase.santidad.descripcion}</Text>
                 <View style={styles.moduloMeta}>
-                  <Text style={[styles.moduloLessons, { color: isDarkMode ? '#a78bfa' : '#7c3aed' }]}>{modulos.santidad.lecciones.length} lecciones</Text>
+                  <Text style={[styles.moduloLessons, { color: isDarkMode ? '#a78bfa' : '#7c3aed' }]}>{modulosBase.santidad.lecciones.length} lecciones</Text>
                 </View>
               </View>
               <ChevronRight size={24} color={isDarkMode ? '#64748b' : '#94a3b8'} />
@@ -665,14 +687,49 @@ export default function DiscipuladoScreen() {
                 <Text style={styles.moduloEmoji}>🔥</Text>
               </View>
               <View style={styles.moduloInfo}>
-                <Text style={[styles.moduloTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>{modulos.espiritu.titulo}</Text>
-                <Text style={[styles.moduloDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>{modulos.espiritu.descripcion}</Text>
+                <Text style={[styles.moduloTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>{modulosBase.espiritu.titulo}</Text>
+                <Text style={[styles.moduloDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>{modulosBase.espiritu.descripcion}</Text>
                 <View style={styles.moduloMeta}>
-                  <Text style={[styles.moduloLessons, { color: isDarkMode ? '#60a5fa' : '#3b82f6' }]}>{modulos.espiritu.lecciones.length} lecciones</Text>
+                  <Text style={[styles.moduloLessons, { color: isDarkMode ? '#60a5fa' : '#3b82f6' }]}>{modulosBase.espiritu.lecciones.length} lecciones</Text>
                 </View>
               </View>
               <ChevronRight size={24} color={isDarkMode ? '#64748b' : '#94a3b8'} />
             </TouchableOpacity>
+
+            {modulosPersonalizados.map((modulo, index) => {
+              const colors = ['#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+              const emojis = ['📚', '🎓', '📖', '✍️', '🌟'];
+              const bgColor = colors[index % colors.length];
+              const emoji = emojis[index % emojis.length];
+
+              return (
+                <TouchableOpacity
+                  key={modulo.id}
+                  style={[styles.moduloCard, { backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }]}
+                  onPress={() => {
+                    setModuloActivo(modulo.id);
+                    setLeccionActiva(null);
+                    setSeccionActiva(null);
+                  }}
+                  testID={`modulo-${modulo.id}`}
+                >
+                  <View style={[styles.moduloIcon, { backgroundColor: bgColor }]}>
+                    <Text style={styles.moduloEmoji}>{emoji}</Text>
+                  </View>
+                  <View style={styles.moduloInfo}>
+                    <Text style={[styles.moduloTitle, { color: isDarkMode ? '#f1f5f9' : '#1e293b' }]}>{modulo.titulo}</Text>
+                    <Text style={[styles.moduloDescription, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>{modulo.descripcion}</Text>
+                    <View style={styles.moduloMeta}>
+                      <Text style={[styles.moduloLessons, { color: bgColor }]}>{modulo.lecciones.length} lecciones</Text>
+                      <View style={{ backgroundColor: `${bgColor}20`, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, marginLeft: 8 }}>
+                        <Text style={{ color: bgColor, fontSize: 10, fontWeight: '600' }}>PERSONALIZADO</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <ChevronRight size={24} color={isDarkMode ? '#64748b' : '#94a3b8'} />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </ScrollView>
       </View>
