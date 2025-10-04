@@ -95,7 +95,6 @@ export default function PredicasScreen() {
   const [sermonMainPoints, setSermonMainPoints] = useState<string[]>([]);
   const [sermonNotes, setSermonNotes] = useState('');
   const [sermonVerses, setSermonVerses] = useState<string[]>([]);
-  const [sermonYoutubeUrl, setSermonYoutubeUrl] = useState('');
   const [sermonAudioUrl, setSermonAudioUrl] = useState('');
   const [sermonPdfUrl, setSermonPdfUrl] = useState('');
   const [sermonDocUrl, setSermonDocUrl] = useState('');
@@ -439,7 +438,6 @@ Formato de respuesta en JSON:
         puntosPrincipales: sermonMainPoints,
         notas: sermonNotes,
         versiculos: sermonVerses,
-        youtubeUrl: sermonYoutubeUrl,
         audioUrl: sermonAudioUrl,
         pdfUrl: sermonPdfUrl,
         docUrl: sermonDocUrl,
@@ -522,7 +520,6 @@ Formato de respuesta en JSON:
     setSermonMainPoints([]);
     setSermonNotes('');
     setSermonVerses([]);
-    setSermonYoutubeUrl('');
     setSermonAudioUrl('');
     setSermonPdfUrl('');
     setSermonDocUrl('');
@@ -611,7 +608,7 @@ Formato de respuesta en JSON:
   };
 
   const renderSermonCard = (sermon: Sermon) => {
-    const hasMedia = sermon.audioUrl || sermon.youtubeUrl || sermon.pdfUrl || sermon.docUrl;
+    const hasMedia = sermon.audioUrl || sermon.pdfUrl || sermon.docUrl;
     
     return (
       <TouchableOpacity
@@ -643,7 +640,6 @@ Formato de respuesta en JSON:
           {hasMedia && (
             <View style={styles.mediaIcons}>
               {sermon.audioUrl && <Mic size={16} color={colors.primary} />}
-              {sermon.youtubeUrl && <Youtube size={16} color={colors.primary} />}
               {sermon.pdfUrl && <FileText size={16} color={colors.primary} />}
               {sermon.docUrl && <FileDown size={16} color={colors.primary} />}
             </View>
@@ -774,7 +770,7 @@ Formato de respuesta en JSON:
 
         {showFilters && selectedTab === 'sermons' && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterContainer}>
-            {['all', 'audio', 'video', 'pdf', 'recent'].map(filter => (
+            {['all', 'audio', 'pdf', 'recent'].map(filter => (
               <TouchableOpacity
                 key={filter}
                 style={[
@@ -789,7 +785,6 @@ Formato de respuesta en JSON:
                 ]}>
                   {filter === 'all' ? 'Todos' : 
                    filter === 'audio' ? 'Con Audio' :
-                   filter === 'video' ? 'Con Video' :
                    filter === 'pdf' ? 'Con PDF' : 'Recientes'}
                 </Text>
               </TouchableOpacity>
@@ -885,7 +880,6 @@ Formato de respuesta en JSON:
                 filteredSermons = filteredSermons.filter(s => {
                   switch(selectedFilter) {
                     case 'audio': return !!s.audioUrl;
-                    case 'video': return !!s.youtubeUrl;
                     case 'pdf': return !!s.pdfUrl;
                     case 'recent': 
                       const weekAgo = new Date();
@@ -1053,20 +1047,6 @@ Formato de respuesta en JSON:
                   onChangeText={setSermonDate}
                   placeholder="YYYY-MM-DD"
                   placeholderTextColor={colors.textSecondary}
-                />
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={[styles.label, { color: colors.text }]}>URL de YouTube (opcional)</Text>
-                <Text style={[styles.helperText, { color: colors.textSecondary }]}>Pega el enlace del video de YouTube</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
-                  value={sermonYoutubeUrl}
-                  onChangeText={setSermonYoutubeUrl}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  placeholderTextColor={colors.textSecondary}
-                  autoCapitalize="none"
-                  keyboardType="url"
                 />
               </View>
 
@@ -1255,20 +1235,6 @@ Formato de respuesta en JSON:
                   onChangeText={setSermonDate}
                   placeholder="YYYY-MM-DD"
                   placeholderTextColor={colors.textSecondary}
-                />
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={[styles.label, { color: colors.text }]}>URL de YouTube (opcional)</Text>
-                <Text style={[styles.helperText, { color: colors.textSecondary }]}>Pega el enlace del video de YouTube</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
-                  value={sermonYoutubeUrl}
-                  onChangeText={setSermonYoutubeUrl}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  placeholderTextColor={colors.textSecondary}
-                  autoCapitalize="none"
-                  keyboardType="url"
                 />
               </View>
 
@@ -1518,18 +1484,12 @@ Formato de respuesta en JSON:
                 </View>
               ) : null}
 
-              { (selectedSermon?.audioUrl || selectedSermon?.youtubeUrl || selectedSermon?.pdfUrl || selectedSermon?.docUrl) ? (
+              { (selectedSermon?.audioUrl || selectedSermon?.pdfUrl || selectedSermon?.docUrl) ? (
                 <View style={[styles.mediaIcons, { marginTop: 16 }]} testID="sermon-media-actions">
                   {selectedSermon?.audioUrl ? (
                     <TouchableOpacity onPress={() => selectedSermon && handlePlaySermon(selectedSermon)} style={styles.filterChip} testID="play-sermon-audio">
                       <Mic size={18} color={colors.primary} />
                       <Text style={[styles.filterChipText, { color: colors.text, marginLeft: 6 }]}>Reproducir audio</Text>
-                    </TouchableOpacity>
-                  ) : null}
-                  {selectedSermon?.youtubeUrl ? (
-                    <TouchableOpacity onPress={() => selectedSermon?.youtubeUrl && handleOpenLink(selectedSermon.youtubeUrl)} style={styles.filterChip} testID="open-sermon-youtube">
-                      <Play size={18} color={colors.primary} />
-                      <Text style={[styles.filterChipText, { color: colors.text, marginLeft: 6 }]}>Reproducir video</Text>
                     </TouchableOpacity>
                   ) : null}
                   {selectedSermon?.pdfUrl ? (
@@ -1565,7 +1525,7 @@ Formato de respuesta en JSON:
                 </TouchableOpacity>
               </View>
 
-              {!selectedSermon?.audioUrl && !selectedSermon?.youtubeUrl && !selectedSermon?.pdfUrl && !selectedSermon?.docUrl && !selectedSermon?.contenido && !selectedSermon?.notas ? (
+              {!selectedSermon?.audioUrl && !selectedSermon?.pdfUrl && !selectedSermon?.docUrl && !selectedSermon?.contenido && !selectedSermon?.notas ? (
                 <View style={[styles.emptyState, { paddingVertical: 24 }]} testID="sermon-empty-content">
                   <FileText size={36} color={colors.textSecondary} />
                   <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Este sermón no tiene contenido disponible.</Text>

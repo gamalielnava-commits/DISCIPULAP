@@ -436,46 +436,108 @@ export default function ReportsScreen() {
     },
   ];
 
-  // Generar datos para gráficos según el período y métrica
+  // Generar datos para gráficos según el período y métrica con datos reales
   const chartData = useMemo(() => {
+    const now = new Date();
+    const currentYear = selectedYear;
+    const currentMonth = selectedMonth;
+    
     const generateData = () => {
       switch (selectedPeriod) {
-        case 'semanal':
-          return [
-            { label: 'Lun', value: Math.floor(Math.random() * 30) + 10, color: colors.primary },
-            { label: 'Mar', value: Math.floor(Math.random() * 30) + 15, color: colors.primary },
-            { label: 'Mié', value: Math.floor(Math.random() * 30) + 18, color: colors.primary },
-            { label: 'Jue', value: Math.floor(Math.random() * 30) + 14, color: colors.primary },
-            { label: 'Vie', value: Math.floor(Math.random() * 30) + 22, color: colors.secondary },
-            { label: 'Sáb', value: Math.floor(Math.random() * 30) + 25, color: colors.secondary },
-            { label: 'Dom', value: Math.floor(Math.random() * 50) + 45, color: colors.success },
-          ];
-        case 'mensual':
-          return [
-            { label: 'Sem 1', value: Math.floor(Math.random() * 40) + 60, color: colors.primary },
-            { label: 'Sem 2', value: Math.floor(Math.random() * 40) + 70, color: colors.primary },
-            { label: 'Sem 3', value: Math.floor(Math.random() * 40) + 55, color: colors.secondary },
-            { label: 'Sem 4', value: Math.floor(Math.random() * 40) + 80, color: colors.success },
-          ];
-        case 'trimestral':
-          return [
-            { label: 'Mes 1', value: Math.floor(Math.random() * 100) + 200, color: colors.primary },
-            { label: 'Mes 2', value: Math.floor(Math.random() * 100) + 250, color: colors.secondary },
-            { label: 'Mes 3', value: Math.floor(Math.random() * 100) + 280, color: colors.success },
-          ];
-        case 'anual':
-          return [
-            { label: 'Q1', value: Math.floor(Math.random() * 200) + 800, color: colors.primary },
-            { label: 'Q2', value: Math.floor(Math.random() * 200) + 900, color: colors.secondary },
-            { label: 'Q3', value: Math.floor(Math.random() * 200) + 850, color: colors.info },
-            { label: 'Q4', value: Math.floor(Math.random() * 200) + 950, color: colors.success },
-          ];
+        case 'semanal': {
+          // Últimos 7 días
+          const data = [];
+          const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+          for (let i = 6; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(date.getDate() - i);
+            const dayAttendance = filteredAttendance.filter(a => {
+              const aDate = new Date(a.fecha);
+              return aDate.toDateString() === date.toDateString();
+            });
+            const totalAttendees = dayAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
+            data.push({
+              label: dayNames[date.getDay()],
+              value: totalAttendees,
+              color: date.getDay() === 0 ? colors.success : date.getDay() >= 5 ? colors.secondary : colors.primary
+            });
+          }
+          return data;
+        }
+        case 'mensual': {
+          // Últimas 4 semanas del mes seleccionado
+          const data = [];
+          const startOfMonth = new Date(currentYear, currentMonth, 1);
+          const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+          const weeksInMonth = Math.ceil(endOfMonth.getDate() / 7);
+          
+          for (let week = 0; week < Math.min(weeksInMonth, 4); week++) {
+            const weekStart = new Date(startOfMonth);
+            weekStart.setDate(1 + (week * 7));
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const weekAttendance = filteredAttendance.filter(a => {
+              const aDate = new Date(a.fecha);
+              return aDate >= weekStart && aDate <= weekEnd;
+            });
+            const totalAttendees = weekAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
+            data.push({
+              label: `Sem ${week + 1}`,
+              value: totalAttendees,
+              color: week === weeksInMonth - 1 ? colors.success : week >= 2 ? colors.secondary : colors.primary
+            });
+          }
+          return data;
+        }
+        case 'trimestral': {
+          // Últimos 3 meses
+          const data = [];
+          for (let i = 2; i >= 0; i--) {
+            const monthDate = new Date(currentYear, currentMonth - i, 1);
+            const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+            const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+            
+            const monthAttendance = filteredAttendance.filter(a => {
+              const aDate = new Date(a.fecha);
+              return aDate >= monthStart && aDate <= monthEnd;
+            });
+            const totalAttendees = monthAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            data.push({
+              label: monthNames[monthDate.getMonth()],
+              value: totalAttendees,
+              color: i === 0 ? colors.success : i === 1 ? colors.secondary : colors.primary
+            });
+          }
+          return data;
+        }
+        case 'anual': {
+          // 4 trimestres del año
+          const data = [];
+          for (let quarter = 0; quarter < 4; quarter++) {
+            const quarterStart = new Date(currentYear, quarter * 3, 1);
+            const quarterEnd = new Date(currentYear, (quarter + 1) * 3, 0);
+            
+            const quarterAttendance = filteredAttendance.filter(a => {
+              const aDate = new Date(a.fecha);
+              return aDate >= quarterStart && aDate <= quarterEnd;
+            });
+            const totalAttendees = quarterAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
+            data.push({
+              label: `Q${quarter + 1}`,
+              value: totalAttendees,
+              color: quarter === 3 ? colors.success : quarter >= 2 ? colors.info : quarter === 1 ? colors.secondary : colors.primary
+            });
+          }
+          return data;
+        }
         default:
           return [];
       }
     };
     return generateData();
-  }, [selectedPeriod, selectedMetric, colors]);
+  }, [selectedPeriod, selectedMetric, colors, filteredAttendance, selectedYear, selectedMonth]);
 
   // Datos para gráfico circular
   const pieData = useMemo(() => {
