@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -95,6 +96,23 @@ export default function ZonasScreen() {
     });
   }, [zonas, groups, members, attendance]);
 
+  useEffect(() => {
+    const loadZonas = async () => {
+      try {
+        const storedZonas = await AsyncStorage.getItem('zonas');
+        if (storedZonas && storedZonas !== 'null' && storedZonas !== 'undefined') {
+          const parsed = JSON.parse(storedZonas);
+          if (Array.isArray(parsed)) {
+            setZonas(parsed);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading zonas:', error);
+      }
+    };
+    loadZonas();
+  }, []);
+
   const filteredZonas = useMemo(() => {
     if (!searchQuery) return zonasConEstadisticas;
     return zonasConEstadisticas.filter(zona =>
@@ -122,7 +140,7 @@ export default function ZonasScreen() {
     setModalVisible(true);
   };
 
-  const handleDeleteZona = (zonaId: string) => {
+  const handleDeleteZona = async (zonaId: string) => {
     Alert.alert(
       'Eliminar Zona',
       '¿Estás seguro de que deseas eliminar esta zona?',
@@ -131,34 +149,37 @@ export default function ZonasScreen() {
         {
           text: 'Eliminar',
           style: 'destructive',
-          onPress: () => {
-            setZonas(prev => prev.filter(z => z.id !== zonaId));
+          onPress: async () => {
+            const updatedZonas = zonas.filter(z => z.id !== zonaId);
+            setZonas(updatedZonas);
+            await AsyncStorage.setItem('zonas', JSON.stringify(updatedZonas));
           },
         },
       ]
     );
   };
 
-  const handleSaveZona = () => {
+  const handleSaveZona = async () => {
     if (!formData.nombre || !formData.supervisor) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
 
+    let updatedZonas: Zona[];
+
     if (editMode && selectedZona) {
-      setZonas(prev =>
-        prev.map(z =>
-          z.id === selectedZona.id
-            ? {
-                ...z,
-                nombre: formData.nombre,
-                supervisor: formData.supervisor,
-                supervisorId: formData.supervisorId,
-                grupos: selectedGrupos,
-              }
-            : z
-        )
+      updatedZonas = zonas.map(z =>
+        z.id === selectedZona.id
+          ? {
+              ...z,
+              nombre: formData.nombre,
+              supervisor: formData.supervisor,
+              supervisorId: formData.supervisorId,
+              grupos: selectedGrupos,
+            }
+          : z
       );
+      setZonas(updatedZonas);
     } else {
       const newZona: Zona = {
         id: Date.now().toString(),
@@ -172,8 +193,11 @@ export default function ZonasScreen() {
         asistenciaPromedio: 0,
         discipuladoCompletado: 0,
       };
-      setZonas(prev => [...prev, newZona]);
+      updatedZonas = [...zonas, newZona];
+      setZonas(updatedZonas);
     }
+
+    await AsyncStorage.setItem('zonas', JSON.stringify(updatedZonas));
 
     setModalVisible(false);
     setFormData({ nombre: '', supervisor: '', supervisorId: '' });

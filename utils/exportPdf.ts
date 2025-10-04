@@ -234,8 +234,13 @@ export async function exportarLeccionPDF(
 
     // Generar el PDF
     if (Platform.OS === 'web') {
-      await Print.printAsync({ html });
-      console.log('PDF generado exitosamente en web');
+      try {
+        await Print.printAsync({ html });
+        console.log('PDF generado exitosamente en web');
+      } catch (webError) {
+        console.error('Error en web print:', webError);
+        throw new Error('No se pudo generar el PDF en web. Verifica que tu navegador permita la impresión.');
+      }
     } else {
       const { uri } = await Print.printToFileAsync({ 
         html,
@@ -244,14 +249,15 @@ export async function exportarLeccionPDF(
       
       console.log('PDF generado exitosamente en:', uri);
       
-      if (await Sharing.isAvailableAsync()) {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
           dialogTitle: 'Compartir lección',
         });
       } else {
-        throw new Error('Sharing no está disponible en esta plataforma');
+        console.warn('Sharing no disponible, archivo guardado en:', uri);
       }
     }
   } catch (error) {
@@ -413,8 +419,13 @@ export async function exportarModuloPDF(
 
     // Generar el PDF
     if (Platform.OS === 'web') {
-      await Print.printAsync({ html });
-      console.log('PDF del módulo generado exitosamente en web');
+      try {
+        await Print.printAsync({ html });
+        console.log('PDF del módulo generado exitosamente en web');
+      } catch (webError) {
+        console.error('Error en web print:', webError);
+        throw new Error('No se pudo generar el PDF en web. Verifica que tu navegador permita la impresión.');
+      }
     } else {
       const { uri } = await Print.printToFileAsync({ 
         html,
@@ -423,14 +434,15 @@ export async function exportarModuloPDF(
       
       console.log('PDF del módulo generado exitosamente en:', uri);
       
-      if (await Sharing.isAvailableAsync()) {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
           dialogTitle: 'Compartir módulo completo',
         });
       } else {
-        throw new Error('Sharing no está disponible en esta plataforma');
+        console.warn('Sharing no disponible, archivo guardado en:', uri);
       }
     }
   } catch (error) {

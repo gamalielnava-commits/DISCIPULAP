@@ -82,14 +82,15 @@ export async function exportarLeccionCSV(
         encoding: FileSystem.EncodingType.UTF8,
       });
       
-      if (await Sharing.isAvailableAsync()) {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'text/csv',
           dialogTitle: 'Compartir respuestas en CSV',
           UTI: 'public.comma-separated-values-text',
         });
       } else {
-        throw new Error('Sharing no está disponible en esta plataforma');
+        console.warn('Sharing no disponible, archivo guardado en:', fileUri);
       }
     }
   } catch (error) {
@@ -160,14 +161,15 @@ export async function exportarModuloCSV(
         encoding: FileSystem.EncodingType.UTF8,
       });
       
-      if (await Sharing.isAvailableAsync()) {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'text/csv',
           dialogTitle: 'Compartir módulo completo en CSV',
           UTI: 'public.comma-separated-values-text',
         });
       } else {
-        throw new Error('Sharing no está disponible en esta plataforma');
+        console.warn('Sharing no disponible, archivo guardado en:', fileUri);
       }
     }
   } catch (error) {
