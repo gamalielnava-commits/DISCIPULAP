@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.iglesia-casa-de-dios-discipleship-platform-nzteexuw",
+      "bundleIdentifier": "app.rork.iglesia-casa-de-dios-discipleship-platform",
       "usesIcloudStorage": true,
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
