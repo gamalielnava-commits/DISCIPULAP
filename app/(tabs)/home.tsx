@@ -16,6 +16,10 @@ import { router } from "expo-router";
 import Colors from "@/constants/colors";
 import { LinearGradient } from 'expo-linear-gradient';
 import ChurchLogo from '@/components/ChurchLogo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { moduloSantidad } from '@/constants/modulo-santidad';
+import { moduloEspirituSanto } from '@/constants/modulo-espiritu-santo';
+import type { Modulo } from '@/constants/modulo-santidad';
 
 // Frases motivacionales personalizadas por rol
 const welcomePhrasesByRole = {
@@ -61,16 +65,97 @@ const welcomePhrasesByRole = {
   ]
 };
 
+type PreguntaRespondida = {
+  [key: string]: boolean;
+};
+
 export default function HomeScreen() {
   const { members, groups, announcements, user, permissions, isDarkMode } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
   const [refreshing, setRefreshing] = useState(false);
   const [currentPhrase, setCurrentPhrase] = useState(0);
   const welcomePhrases = welcomePhrasesByRole[user?.role || 'invitado'] || welcomePhrasesByRole.invitado;
+  const [userProgress, setUserProgress] = useState({ lecciones: 0, preguntas: 0, puntos: 0, porcentaje: 0 });
 
   const fadeAnim = useState(new Animated.Value(1))[0];
 
   // Filtrar datos según el rol del usuario
+  useEffect(() => {
+    loadUserProgress();
+  }, [user]);
+
+  const loadUserProgress = async () => {
+    if (!user) {
+      setUserProgress({ lecciones: 0, preguntas: 0, puntos: 0, porcentaje: 0 });
+      return;
+    }
+
+    try {
+      const preguntasGuardadas = await AsyncStorage.getItem(`discipulado_preguntas_respondidas_${user.id}`);
+      
+      if (!preguntasGuardadas || preguntasGuardadas === 'null' || preguntasGuardadas === 'undefined') {
+        setUserProgress({ lecciones: 0, preguntas: 0, puntos: 0, porcentaje: 0 });
+        return;
+      }
+
+      const preguntasRespondidas = JSON.parse(preguntasGuardadas) as PreguntaRespondida;
+      
+      const modulosPersonalizadosData = await AsyncStorage.getItem('custom_modulos');
+      const modulosPersonalizados: Modulo[] = modulosPersonalizadosData ? JSON.parse(modulosPersonalizadosData) : [];
+      
+      const modulos: Record<string, Modulo> = {
+        santidad: moduloSantidad,
+        espiritu: moduloEspirituSanto,
+        ...modulosPersonalizados.reduce((acc, modulo) => {
+          acc[modulo.id] = modulo;
+          return acc;
+        }, {} as Record<string, Modulo>),
+      };
+
+      let leccionesCompletadas = 0;
+      let totalPuntos = 0;
+      let preguntasContestadas = 0;
+      let totalPreguntas = 0;
+
+      Object.values(modulos).forEach(modulo => {
+        modulo.lecciones.forEach(leccion => {
+          let preguntasLeccion = 0;
+          let completadasLeccion = 0;
+
+          leccion.secciones.forEach(seccion => {
+            if (seccion.preguntas) {
+              seccion.preguntas.forEach(pregunta => {
+                totalPreguntas++;
+                preguntasLeccion++;
+                if (preguntasRespondidas[pregunta.id]) {
+                  preguntasContestadas++;
+                  completadasLeccion++;
+                  totalPuntos += pregunta.puntos ?? 10;
+                }
+              });
+            }
+          });
+
+          if (preguntasLeccion > 0 && completadasLeccion === preguntasLeccion) {
+            leccionesCompletadas++;
+          }
+        });
+      });
+
+      const porcentaje = totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0;
+
+      setUserProgress({
+        lecciones: leccionesCompletadas,
+        preguntas: preguntasContestadas,
+        puntos: totalPuntos,
+        porcentaje,
+      });
+    } catch (error) {
+      console.error('Error loading user progress:', error);
+      setUserProgress({ lecciones: 0, preguntas: 0, puntos: 0, porcentaje: 0 });
+    }
+  };
+
   const filteredMembers = user?.role === 'miembro' ? [] : 
     user?.role === 'lider' && user.grupoId ? members.filter(m => m.grupoId === user.grupoId) :
     user?.role === 'supervisor' ? members : // Supervisor ve todos por ahora
@@ -115,10 +200,11 @@ export default function HomeScreen() {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
+    loadUserProgress();
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
-  }, []);
+  }, [user]);
 
   const stats = [
     { 
@@ -306,7 +392,7 @@ export default function HomeScreen() {
                 <View style={[styles.statIconSmall, { backgroundColor: '#3b82f6' + '20' }]}>
                   <BookOpen size={18} color="#3b82f6" />
                 </View>
-                <Text style={[styles.statValueSmall, { color: colors.text }]}>3</Text>
+                <Text style={[styles.statValueSmall, { color: colors.text }]}>{userProgress.lecciones}</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Lecciones</Text>
               </View>
               
@@ -314,7 +400,7 @@ export default function HomeScreen() {
                 <View style={[styles.statIconSmall, { backgroundColor: '#10b981' + '20' }]}>
                   <Check size={18} color="#10b981" />
                 </View>
-                <Text style={[styles.statValueSmall, { color: colors.text }]}>25</Text>
+                <Text style={[styles.statValueSmall, { color: colors.text }]}>{userProgress.preguntas}</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Preguntas</Text>
               </View>
               
@@ -322,7 +408,7 @@ export default function HomeScreen() {
                 <View style={[styles.statIconSmall, { backgroundColor: '#f59e0b' + '20' }]}>
                   <TrendingUp size={18} color="#f59e0b" />
                 </View>
-                <Text style={[styles.statValueSmall, { color: colors.text }]}>375</Text>
+                <Text style={[styles.statValueSmall, { color: colors.text }]}>{userProgress.puntos}</Text>
                 <Text style={[styles.statLabelSmall, { color: colors.tabIconDefault }]}>Puntos</Text>
               </View>
             </View>
@@ -330,12 +416,20 @@ export default function HomeScreen() {
             <View style={styles.progressBarSection}>
               <View style={styles.progressBarContainer}>
                 <View style={[styles.progressBarTrack, { backgroundColor: colors.border }]}>
-                  <View style={[styles.progressBarFill, { width: '35%', backgroundColor: colors.primary }]} />
+                  <View style={[styles.progressBarFill, { width: `${userProgress.porcentaje}%`, backgroundColor: colors.primary }]} />
                 </View>
-                <Text style={[styles.progressPercentage, { color: colors.text }]}>35%</Text>
+                <Text style={[styles.progressPercentage, { color: colors.text }]}>{userProgress.porcentaje}%</Text>
               </View>
               <Text style={[styles.progressDescription, { color: colors.tabIconDefault }]}>
-                ¡Excelente progreso! Sigue adelante en tu camino de discipulado.
+                {userProgress.porcentaje === 0 
+                  ? '¡Comienza tu camino de discipulado hoy!' 
+                  : userProgress.porcentaje < 30 
+                  ? '¡Buen comienzo! Sigue adelante en tu camino de discipulado.' 
+                  : userProgress.porcentaje < 70 
+                  ? '¡Excelente progreso! Sigue adelante en tu camino de discipulado.' 
+                  : userProgress.porcentaje < 100 
+                  ? '¡Casi terminas! Continúa con tu dedicación.' 
+                  : '¡Felicidades! Has completado todo el discipulado.'}
               </Text>
             </View>
             
