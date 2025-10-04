@@ -62,8 +62,8 @@ export default function ZonasScreen() {
   const [zonas, setZonas] = useState<Zona[]>([]);
 
   // Calcular estadísticas reales de zonas
-  const calculateZoneStats = React.useCallback(() => {
-    const updatedZonas = zonas.map(zona => {
+  useEffect(() => {
+    setZonas(prevZonas => prevZonas.map(zona => {
       // Obtener grupos de esta zona
       const zoneGroups = groups.filter(g => zona.grupos.includes(g.id));
       
@@ -94,14 +94,8 @@ export default function ZonasScreen() {
         asistenciaPromedio: miembrosTotal > 0 ? Math.round((asistenciaPromedio / miembrosTotal) * 100) : 0,
         discipuladoCompletado: zoneMembersWithDiscipleship,
       };
-    });
-    
-    setZonas(updatedZonas);
-  }, [zonas, groups, members, attendance]);
-
-  useEffect(() => {
-    calculateZoneStats();
-  }, [calculateZoneStats]);
+    }));
+  }, [groups, members, attendance]);
 
   const filteredZonas = useMemo(() => {
     if (!searchQuery) return zonas;
