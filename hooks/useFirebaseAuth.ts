@@ -247,8 +247,42 @@ export function useFirebaseAuth() {
         usersList.push(newUser);
         await AsyncStorage.setItem('users', JSON.stringify(usersList));
         
+        // Crear notificación para el administrador
+        const notifications = await AsyncStorage.getItem('notifications');
+        let notificationsList: any[] = [];
+        if (notifications && notifications !== 'null' && notifications !== 'undefined') {
+          try {
+            notificationsList = JSON.parse(notifications);
+            if (!Array.isArray(notificationsList)) {
+              notificationsList = [];
+            }
+          } catch (e) {
+            notificationsList = [];
+          }
+        }
+        
+        const newNotification = {
+          id: Date.now().toString(),
+          tipo: 'registro',
+          titulo: 'Nuevo usuario registrado',
+          mensaje: `${newUser.nombre} ${newUser.apellido} se ha registrado en la aplicación`,
+          userId: newUser.id,
+          userName: `${newUser.nombre} ${newUser.apellido}`,
+          userEmail: newUser.email,
+          leida: false,
+          fecha: new Date(),
+          accion: {
+            tipo: 'ver_usuario',
+            userId: newUser.id,
+          },
+        };
+        
+        notificationsList.push(newNotification);
+        await AsyncStorage.setItem('notifications', JSON.stringify(notificationsList));
+        
         console.log('Usuario registrado exitosamente:', newUser.email);
         console.log('Total de usuarios:', usersList.length);
+        console.log('Notificación creada para el administrador');
         
         // NO establecer el usuario como autenticado automáticamente
         // El usuario debe iniciar sesión después de registrarse

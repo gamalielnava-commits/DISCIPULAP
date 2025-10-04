@@ -13,6 +13,7 @@ import ChurchLogo from '@/components/ChurchLogo';
 import { useApp } from '@/providers/AppProvider';
 import Colors from '@/constants/colors';
 import { router } from 'expo-router';
+import NotificationBadge from '@/components/NotificationBadge';
 
 interface AppHeaderProps {
   title: string;
@@ -79,11 +80,10 @@ export default function AppHeader({
           </View>
         </View>
         
-        {rightActions && (
-          <View style={styles.rightSection}>
-            {rightActions}
-          </View>
-        )}
+        <View style={styles.rightSection}>
+          <NotificationBadge />
+          {rightActions ? rightActions : null}
+        </View>
       </View>
     </LinearGradient>
   );

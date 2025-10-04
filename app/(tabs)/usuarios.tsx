@@ -73,6 +73,7 @@ export default function UsuariosScreen() {
   const [filterRole, setFilterRole] = useState<UserRole | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<UserStatus | 'all'>('all');
   const [filterGroup, setFilterGroup] = useState<string>('all');
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -219,6 +220,11 @@ export default function UsuariosScreen() {
     }
   };
 
+  // Contar usuarios pendientes
+  const pendingUsersCount = useMemo(() => {
+    return users.filter(u => u.status === 'pendiente').length;
+  }, [users]);
+
   // Filtrar usuarios
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
@@ -230,10 +236,11 @@ export default function UsuariosScreen() {
       const matchesRole = filterRole === 'all' || user.role === filterRole;
       const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
       const matchesGroup = filterGroup === 'all' || user.grupoId === filterGroup;
+      const matchesPending = !showPendingOnly || user.status === 'pendiente';
       
-      return matchesSearch && matchesRole && matchesStatus && matchesGroup;
+      return matchesSearch && matchesRole && matchesStatus && matchesGroup && matchesPending;
     });
-  }, [users, searchQuery, filterRole, filterStatus, filterGroup]);
+  }, [users, searchQuery, filterRole, filterStatus, filterGroup, showPendingOnly]);
 
   // Agregar usuario
   const handleAddUser = async () => {
@@ -719,6 +726,16 @@ export default function UsuariosScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.filtersContainer}
       >
+        <TouchableOpacity
+          style={[styles.filterChip, showPendingOnly && styles.filterChipActive]}
+          onPress={() => setShowPendingOnly(!showPendingOnly)}
+        >
+          <UserCheck size={16} color={showPendingOnly ? '#FFFFFF' : '#95A5A6'} />
+          <Text style={[styles.filterChipText, showPendingOnly && styles.filterChipTextActive]}>
+            Pendientes {pendingUsersCount > 0 && `(${pendingUsersCount})`}
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.filterChip, filterRole !== 'all' && styles.filterChipActive]}
           onPress={() => setFilterRole(filterRole === 'all' ? 'miembro' : 'all')}

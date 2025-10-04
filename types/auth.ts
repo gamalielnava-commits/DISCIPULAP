@@ -111,6 +111,22 @@ export interface SermonQuestion {
   respuesta?: string;
 }
 
+export interface Notification {
+  id: string;
+  tipo: 'registro' | 'cumpleanos' | 'general';
+  titulo: string;
+  mensaje: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  leida: boolean;
+  fecha: Date;
+  accion?: {
+    tipo: 'ver_usuario' | 'felicitar' | 'aprobar';
+    userId?: string;
+  };
+}
+
 export interface RolePermissions {
   // Acceso a módulos
   canAccessBiblia: boolean;

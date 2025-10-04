@@ -10,6 +10,7 @@ import MiniPlayer from "@/components/MiniPlayer";
 import Colors from "@/constants/colors";
 import { trpc, trpcClient } from "@/lib/trpc";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useBirthdayNotifications } from "@/hooks/useBirthdayNotifications";
 
 SplashScreen.preventAutoHideAsync().catch((e) => {
   console.log("SplashScreen.preventAutoHideAsync error", e);
@@ -77,6 +78,8 @@ function RootLayoutContent() {
   const { isDarkMode } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
   const hasHiddenSplash = useRef(false);
+  
+  useBirthdayNotifications();
 
   const onReady = useCallback(async () => {
     if (hasHiddenSplash.current) return;

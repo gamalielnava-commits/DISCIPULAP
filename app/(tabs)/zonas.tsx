@@ -63,6 +63,8 @@ export default function ZonasScreen() {
 
   // Calcular estadísticas reales de zonas usando useMemo
   const zonasConEstadisticas = useMemo(() => {
+    if (!zonas || zonas.length === 0) return [];
+    
     return zonas.map(zona => {
       const zoneGroups = groups.filter(g => zona.grupos.includes(g.id));
       

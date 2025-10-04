@@ -63,9 +63,9 @@ export default function LoginScreen() {
     }
   };
 
-  const LogoContainer = Platform.OS !== 'web' ? BlurView : View;
-  const FormContainer = Platform.OS !== 'web' ? BlurView : View;
-  const DesktopWrapper = Platform.OS !== 'web' && isDesktop ? BlurView : View;
+  const LogoContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
+  const FormContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
+  const DesktopWrapper = (Platform.OS !== 'web' || isDesktop) ? BlurView : View;
 
   return (
     <View style={styles.container}>
@@ -92,11 +92,11 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             <DesktopWrapper 
-              {...(Platform.OS !== 'web' && isDesktop ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              {...((Platform.OS !== 'web' || isDesktop) ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
               style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}
             >
             <LogoContainer 
-              {...(Platform.OS !== 'web' ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              {...((Platform.OS !== 'web' || isDesktop) ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
               style={styles.logoContainer}
             >
               <ChurchLogo size={isDesktop ? 120 : 100} />
@@ -105,7 +105,7 @@ export default function LoginScreen() {
             </LogoContainer>
 
             <FormContainer 
-              {...(Platform.OS !== 'web' ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              {...((Platform.OS !== 'web' || isDesktop) ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
               style={[styles.formContainer, isDesktop && styles.formContainerDesktop]}
             >
             {error ? (
@@ -338,17 +338,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    letterSpacing: 0.3,
-    ...(Platform.OS === 'web' && width >= 768 ? {
-      textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    } : {}),
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
+    letterSpacing: 0.5,
   },
   inputContainer: {
     flexDirection: 'row',
