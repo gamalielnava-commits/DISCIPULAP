@@ -145,3 +145,18 @@ export function showImagePickerOptions(
     { cancelable: true }
   );
 }
+
+export async function uploadImage(
+  imageUri: string,
+  folder: string = 'images'
+): Promise<string> {
+  try {
+    const timestamp = Date.now();
+    const filename = `${folder}/${timestamp}.jpg`;
+    const downloadUrl = await StorageService.uploadImage(filename, imageUri);
+    return downloadUrl;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw new Error('Error al subir imagen');
+  }
+}
