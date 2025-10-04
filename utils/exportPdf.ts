@@ -233,15 +233,17 @@ export async function exportarLeccionPDF(
     `;
 
     // Generar el PDF
-    const { uri } = await Print.printToFileAsync({ 
-      html,
-      base64: false 
-    });
-    
-    console.log('PDF generado exitosamente en:', uri);
-    
-    // Compartir el PDF
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Platform.OS === 'web') {
+      await Print.printAsync({ html });
+      console.log('PDF generado exitosamente en web');
+    } else {
+      const { uri } = await Print.printToFileAsync({ 
+        html,
+        base64: false 
+      });
+      
+      console.log('PDF generado exitosamente en:', uri);
+      
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
@@ -249,11 +251,8 @@ export async function exportarLeccionPDF(
           dialogTitle: 'Compartir lección',
         });
       } else {
-        console.warn('Sharing no está disponible en esta plataforma');
+        throw new Error('Sharing no está disponible en esta plataforma');
       }
-    } else if (Platform.OS === 'web') {
-      // En web, abrir el PDF en una nueva ventana
-      await Print.printAsync({ html });
     }
   } catch (error) {
     console.error('Error exportando PDF:', error);
@@ -413,15 +412,17 @@ export async function exportarModuloPDF(
     `;
 
     // Generar el PDF
-    const { uri } = await Print.printToFileAsync({ 
-      html,
-      base64: false 
-    });
-    
-    console.log('PDF del módulo generado exitosamente en:', uri);
-    
-    // Compartir el PDF
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Platform.OS === 'web') {
+      await Print.printAsync({ html });
+      console.log('PDF del módulo generado exitosamente en web');
+    } else {
+      const { uri } = await Print.printToFileAsync({ 
+        html,
+        base64: false 
+      });
+      
+      console.log('PDF del módulo generado exitosamente en:', uri);
+      
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, {
           UTI: '.pdf',
@@ -429,11 +430,8 @@ export async function exportarModuloPDF(
           dialogTitle: 'Compartir módulo completo',
         });
       } else {
-        console.warn('Sharing no está disponible en esta plataforma');
+        throw new Error('Sharing no está disponible en esta plataforma');
       }
-    } else if (Platform.OS === 'web') {
-      // En web, abrir el PDF en una nueva ventana
-      await Print.printAsync({ html });
     }
   } catch (error) {
     console.error('Error exportando PDF del módulo:', error);

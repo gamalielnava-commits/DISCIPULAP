@@ -59,21 +59,38 @@ export async function exportarLeccionCSV(
     }
     csvContent += `Fecha de exportación:,"${new Date().toLocaleDateString('es-ES')}"\n`;
     
-    // Guardar el archivo
-    const fileName = `leccion_${leccion.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
-    const fileUri = FileSystem.documentDirectory + fileName;
-    
-    await FileSystem.writeAsStringAsync(fileUri, csvContent, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-    
-    // Compartir el archivo
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        dialogTitle: 'Compartir respuestas en CSV',
-        UTI: 'public.comma-separated-values-text',
+    // Guardar y compartir el archivo
+    if (Platform.OS === 'web') {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      const fileName = `leccion_${leccion.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('CSV descargado exitosamente en web');
+    } else {
+      const fileName = `leccion_${leccion.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+      
+      await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+        encoding: FileSystem.EncodingType.UTF8,
       });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: 'Compartir respuestas en CSV',
+          UTI: 'public.comma-separated-values-text',
+        });
+      } else {
+        throw new Error('Sharing no está disponible en esta plataforma');
+      }
     }
   } catch (error) {
     console.error('Error exportando CSV:', error);
@@ -120,21 +137,38 @@ export async function exportarModuloCSV(
       });
     });
     
-    // Guardar el archivo
-    const fileName = `modulo_${modulo.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
-    const fileUri = FileSystem.documentDirectory + fileName;
-    
-    await FileSystem.writeAsStringAsync(fileUri, csvContent, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-    
-    // Compartir el archivo
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        dialogTitle: 'Compartir módulo completo en CSV',
-        UTI: 'public.comma-separated-values-text',
+    // Guardar y compartir el archivo
+    if (Platform.OS === 'web') {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      const fileName = `modulo_${modulo.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('CSV del módulo descargado exitosamente en web');
+    } else {
+      const fileName = `modulo_${modulo.titulo.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+      
+      await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+        encoding: FileSystem.EncodingType.UTF8,
       });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/csv',
+          dialogTitle: 'Compartir módulo completo en CSV',
+          UTI: 'public.comma-separated-values-text',
+        });
+      } else {
+        throw new Error('Sharing no está disponible en esta plataforma');
+      }
     }
   } catch (error) {
     console.error('Error exportando CSV del módulo:', error);

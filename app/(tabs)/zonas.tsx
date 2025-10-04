@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -61,29 +61,25 @@ export default function ZonasScreen() {
 
   const [zonas, setZonas] = useState<Zona[]>([]);
 
-  // Calcular estadísticas reales de zonas
-  useEffect(() => {
-    setZonas(prevZonas => prevZonas.map(zona => {
-      // Obtener grupos de esta zona
+  // Calcular estadísticas reales de zonas usando useMemo
+  const zonasConEstadisticas = useMemo(() => {
+    return zonas.map(zona => {
       const zoneGroups = groups.filter(g => zona.grupos.includes(g.id));
       
-      // Calcular miembros totales
       const miembrosTotal = members.filter(m => 
         zoneGroups.some(g => g.id === m.grupoId)
       ).length;
       
-      // Calcular asistencia promedio
       const zoneAttendance = attendance.filter(a => 
         zoneGroups.some(g => g.id === a.grupoId)
       );
       
       let asistenciaPromedio = 0;
-      if (zoneAttendance.length > 0) {
+      if (zoneAttendance.length > 0 && miembrosTotal > 0) {
         const totalAsistentes = zoneAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
-        asistenciaPromedio = Math.round((totalAsistentes / zoneAttendance.length));
+        asistenciaPromedio = Math.round((totalAsistentes / zoneAttendance.length / miembrosTotal) * 100);
       }
       
-      // Calcular discipulado completado
       const zoneMembersWithDiscipleship = members.filter(m => 
         zoneGroups.some(g => g.id === m.grupoId) && m.discipulado
       ).length;
@@ -91,19 +87,19 @@ export default function ZonasScreen() {
       return {
         ...zona,
         miembrosTotal,
-        asistenciaPromedio: miembrosTotal > 0 ? Math.round((asistenciaPromedio / miembrosTotal) * 100) : 0,
+        asistenciaPromedio,
         discipuladoCompletado: zoneMembersWithDiscipleship,
       };
-    }));
-  }, [groups, members, attendance]);
+    });
+  }, [zonas, groups, members, attendance]);
 
   const filteredZonas = useMemo(() => {
-    if (!searchQuery) return zonas;
-    return zonas.filter(zona =>
+    if (!searchQuery) return zonasConEstadisticas;
+    return zonasConEstadisticas.filter(zona =>
       zona.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       zona.supervisor.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [zonas, searchQuery]);
+  }, [zonasConEstadisticas, searchQuery]);
 
   const handleAddZona = () => {
     setEditMode(false);
