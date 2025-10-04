@@ -31,7 +31,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-     "package": "app.rork.iglesia-casa-de-dios-discipleship-platform",
+      "package": "app.rork.iglesia-casa-de-dios-discipleship-platform",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
