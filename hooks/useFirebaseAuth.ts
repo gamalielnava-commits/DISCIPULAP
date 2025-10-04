@@ -6,7 +6,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 import { IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 
 export function useFirebaseAuth() {
-  const { setUser, setIsAuthenticated, user } = useApp();
+  const { setUser, setIsAuthenticated, user, isAuthenticated, isLoading: appIsLoading } = useApp();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,35 +52,20 @@ export function useFirebaseAuth() {
         return unsubscribe;
       } else {
         console.log('Firebase not configured. Using local auth with persistence.');
+        console.log('useFirebaseAuth - isAuthenticated from AppProvider:', isAuthenticated);
+        console.log('useFirebaseAuth - user from AppProvider:', user?.email);
+        console.log('useFirebaseAuth - appIsLoading:', appIsLoading);
         
-        // Cargar usuario persistido en modo local
-        try {
-          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-          const storedUser = await AsyncStorage.getItem('currentUser');
-          
-          if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
-            try {
-              const parsedUser = JSON.parse(storedUser);
-              console.log('Usuario persistido encontrado:', parsedUser.email);
-              setUser(parsedUser);
-              setIsAuthenticated(true);
-            } catch (e) {
-              console.error('Error parsing stored user:', e);
-              await AsyncStorage.removeItem('currentUser');
-            }
-          } else {
-            console.log('No hay usuario persistido');
-          }
-        } catch (error) {
-          console.error('Error loading persisted user:', error);
-        } finally {
+        // En modo local, el AppProvider ya carga el usuario desde AsyncStorage
+        // Esperamos a que AppProvider termine de cargar antes de marcar loading como false
+        if (!appIsLoading) {
           setLoading(false);
         }
       }
     };
 
     initAuth();
-  }, [setUser, setIsAuthenticated]);
+  }, [setUser, setIsAuthenticated, appIsLoading]);
 
   const signIn = async (identifier: string, password: string) => {
     try {
