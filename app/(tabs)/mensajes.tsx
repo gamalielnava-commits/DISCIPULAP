@@ -14,7 +14,19 @@ import {
 } from "react-native";
 import { Stack } from "expo-router";
 import { Plus, Search, X, Trash2, Edit, AlertCircle } from "lucide-react-native";
-import { FirestoreService } from "@/services/firebase";
+import { db, IS_FIREBASE_CONFIGURED } from "@/services/firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  where,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { useApp } from "@/providers/AppProvider";
 import { uploadImage } from "@/utils/imageUpload";
 import * as ImagePicker from "expo-image-picker";
@@ -64,19 +76,63 @@ export default function MensajesScreen() {
   const loadMensajes = async () => {
     try {
       setLoading(true);
-      const mensajesData = await FirestoreService.getAll("mensajes");
-      const activeMensajes = mensajesData
+      console.log("=== CARGANDO MENSAJES ===");
+      console.log("Firebase configurado:", IS_FIREBASE_CONFIGURED);
+      
+      if (!IS_FIREBASE_CONFIGURED) {
+        console.warn("Firebase no está configurado. Por favor configura las credenciales en .env");
+        Alert.alert(
+          "Firebase no configurado",
+          "Por favor configura las credenciales de Firebase en el archivo .env para usar esta función."
+        );
+        setMensajes([]);
+        setFilteredMensajes([]);
+        return;
+      }
+      
+      const mensajesRef = collection(db, "mensajes");
+      console.log("Colección de mensajes creada");
+      
+      // Primero intentar obtener todos los mensajes sin filtros complejos
+      const snapshot = await getDocs(mensajesRef);
+      console.log("Total de documentos en mensajes:", snapshot.size);
+      
+      const mensajesData = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          console.log("Documento:", doc.id, data);
+          return {
+            id: doc.id,
+            ...data,
+            fechaCreacion: data.fechaCreacion?.toDate?.() || new Date(),
+          };
+        })
         .filter((m: any) => m.activo !== false)
         .sort((a: any, b: any) => {
-          const dateA = a.fechaCreacion?.toDate?.() || a.fechaCreacion || a.createdAt?.toDate?.() || a.createdAt || new Date(0);
-          const dateB = b.fechaCreacion?.toDate?.() || b.fechaCreacion || b.createdAt?.toDate?.() || b.createdAt || new Date(0);
-          return dateB - dateA;
-        });
-      setMensajes(activeMensajes);
-      setFilteredMensajes(activeMensajes);
-    } catch (error) {
+          const dateA = a.fechaCreacion instanceof Date ? a.fechaCreacion : new Date(0);
+          const dateB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        }) as Mensaje[];
+
+      console.log("Mensajes activos procesados:", mensajesData.length);
+      setMensajes(mensajesData);
+      setFilteredMensajes(mensajesData);
+    } catch (error: any) {
       console.error("Error loading mensajes:", error);
-      Alert.alert("Error", "No se pudieron cargar los mensajes");
+      console.error("Error code:", error?.code);
+      console.error("Error message:", error?.message);
+      
+      let errorMessage = "No se pudieron cargar los mensajes";
+      
+      if (error?.code === 'failed-precondition' || error?.message?.includes('index')) {
+        errorMessage = "Se necesita crear un índice en Firebase. Por favor revisa la consola de Firebase.";
+      } else if (error?.code === 'permission-denied') {
+        errorMessage = "No tienes permisos para acceder a los mensajes. Verifica las reglas de seguridad de Firebase.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -128,32 +184,40 @@ export default function MensajesScreen() {
 
     try {
       setUploading(true);
+      console.log("Guardando mensaje...", formData);
 
       if (editingMensaje) {
-        await FirestoreService.update("mensajes", editingMensaje.id, {
+        const mensajeRef = doc(db, "mensajes", editingMensaje.id);
+        await updateDoc(mensajeRef, {
           titulo: formData.titulo,
           contenido: formData.contenido,
           imagenUrl: formData.imagenUrl,
           tipo: formData.tipo,
+          updatedAt: Timestamp.now(),
         });
+        console.log("Mensaje actualizado exitosamente");
         Alert.alert("Éxito", "Mensaje actualizado correctamente");
       } else {
-        await FirestoreService.create("mensajes", {
+        const mensajesRef = collection(db, "mensajes");
+        const newMensaje = {
           ...formData,
           creadoPor: user?.id || "",
           creadoPorNombre: `${user?.nombre || ""} ${user?.apellido || ""}`.trim() || user?.email || "Usuario",
-          fechaCreacion: new Date(),
+          fechaCreacion: Timestamp.now(),
           activo: true,
-        });
+        };
+        console.log("Creando nuevo mensaje:", newMensaje);
+        await addDoc(mensajesRef, newMensaje);
+        console.log("Mensaje creado exitosamente");
         Alert.alert("Éxito", "Mensaje creado correctamente");
       }
 
       resetForm();
       setModalVisible(false);
-      loadMensajes();
+      await loadMensajes();
     } catch (error) {
       console.error("Error saving mensaje:", error);
-      Alert.alert("Error", "No se pudo guardar el mensaje");
+      Alert.alert("Error", "No se pudo guardar el mensaje: " + (error as Error).message);
     } finally {
       setUploading(false);
     }
@@ -170,12 +234,15 @@ export default function MensajesScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await FirestoreService.delete("mensajes", id);
+              console.log("Eliminando mensaje:", id);
+              const mensajeRef = doc(db, "mensajes", id);
+              await deleteDoc(mensajeRef);
+              console.log("Mensaje eliminado exitosamente");
               Alert.alert("Éxito", "Mensaje eliminado correctamente");
-              loadMensajes();
+              await loadMensajes();
             } catch (error) {
               console.error("Error deleting mensaje:", error);
-              Alert.alert("Error", "No se pudo eliminar el mensaje");
+              Alert.alert("Error", "No se pudo eliminar el mensaje: " + (error as Error).message);
             }
           },
         },
@@ -244,9 +311,11 @@ export default function MensajesScreen() {
           <Text style={[styles.mensajeAutor, { color: colors.tabIconDefault }]}>Por: {item.creadoPorNombre}</Text>
           <Text style={[styles.mensajeFecha, { color: colors.tabIconDefault }]}>
             {item.fechaCreacion instanceof Date
-              ? item.fechaCreacion.toLocaleDateString()
-              : item.createdAt instanceof Date
-              ? item.createdAt.toLocaleDateString()
+              ? item.fechaCreacion.toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
               : "Hoy"}
           </Text>
         </View>

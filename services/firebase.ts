@@ -31,6 +31,8 @@ import {
 } from 'firebase/storage';
 import { Platform } from 'react-native';
 import { auth, db, storage, IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
+
+export { db, auth, storage, IS_FIREBASE_CONFIGURED };
 import { User } from '@/types/auth';
 
 export const REQUIRE_EMAIL_VERIFICATION = false as const;
