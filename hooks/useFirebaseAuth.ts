@@ -10,48 +10,76 @@ export function useFirebaseAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (IS_FIREBASE_CONFIGURED) {
-      console.log('Firebase configured: skipping automatic default admin creation');
-    } else {
-      console.warn('Firebase not configured. Using local auth only.');
-    }
-
-    const unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
-      try {
-        if (firebaseUser) {
-          const userProfile = await AuthService.getUserProfile(firebaseUser.uid);
-          if (userProfile) {
-            setUser(userProfile);
-            setIsAuthenticated(true);
-          } else {
-            const basicProfile: Partial<User> = {
-              nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
-              apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
-              email: firebaseUser.email || '',
-              role: 'miembro',
-              status: 'activo',
-            };
-            await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
-            const newProfile = await AuthService.getUserProfile(firebaseUser.uid);
-            if (newProfile) {
-              setUser(newProfile);
-              setIsAuthenticated(true);
+    const initAuth = async () => {
+      if (IS_FIREBASE_CONFIGURED) {
+        console.log('Firebase configured: using Firebase auth');
+        
+        const unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
+          try {
+            if (firebaseUser) {
+              const userProfile = await AuthService.getUserProfile(firebaseUser.uid);
+              if (userProfile) {
+                setUser(userProfile);
+                setIsAuthenticated(true);
+              } else {
+                const basicProfile: Partial<User> = {
+                  nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
+                  apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+                  email: firebaseUser.email || '',
+                  role: 'miembro',
+                  status: 'activo',
+                };
+                await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
+                const newProfile = await AuthService.getUserProfile(firebaseUser.uid);
+                if (newProfile) {
+                  setUser(newProfile);
+                  setIsAuthenticated(true);
+                }
+              }
+            } else {
+              setUser(null);
+              setIsAuthenticated(false);
             }
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+            setUser(null);
+            setIsAuthenticated(false);
+          } finally {
+            setLoading(false);
           }
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Error in auth state change:', error);
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
-      }
-    });
+        });
 
-    return unsubscribe;
+        return unsubscribe;
+      } else {
+        console.log('Firebase not configured. Using local auth with persistence.');
+        
+        // Cargar usuario persistido en modo local
+        try {
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          const storedUser = await AsyncStorage.getItem('currentUser');
+          
+          if (storedUser && storedUser !== 'null' && storedUser !== 'undefined') {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              console.log('Usuario persistido encontrado:', parsedUser.email);
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+            } catch (e) {
+              console.error('Error parsing stored user:', e);
+              await AsyncStorage.removeItem('currentUser');
+            }
+          } else {
+            console.log('No hay usuario persistido');
+          }
+        } catch (error) {
+          console.error('Error loading persisted user:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initAuth();
   }, [setUser, setIsAuthenticated]);
 
   const signIn = async (identifier: string, password: string) => {
@@ -246,7 +274,17 @@ export function useFirebaseAuth() {
 
   const signOut = async () => {
     try {
-      await AuthService.signOut();
+      if (IS_FIREBASE_CONFIGURED) {
+        await AuthService.signOut();
+      } else {
+        // En modo local, solo limpiar el usuario actual
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.removeItem('currentUser');
+        console.log('Sesión cerrada en modo local');
+      }
+      
+      setUser(null);
+      setIsAuthenticated(false);
       return { success: true };
     } catch (error: any) {
       console.error('Sign out error:', error);
