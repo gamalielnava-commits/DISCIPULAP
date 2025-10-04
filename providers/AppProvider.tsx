@@ -872,8 +872,10 @@ export const [AppProvider, useApp] = createContextHook(() => {
   // Función para resetear todas las estadísticas y datos
   const resetAllData = async () => {
     try {
+      console.log('Iniciando reseteo de todos los datos...');
+      
       // Limpiar todos los datos del AsyncStorage
-      await AsyncStorage.multiRemove([
+      const keysToRemove = [
         'members',
         'groups',
         'zones',
@@ -884,13 +886,23 @@ export const [AppProvider, useApp] = createContextHook(() => {
         'resources',
         'announcements',
         'customPermissions',
-        'discipleship_progress',
-        'discipleship_scores',
-        'devotionals',
-        'devotional_progress',
-        'module_visibility',
+        'discipleshipProgress',
+        'discipleshipScores',
+        'topScores',
+        'attendanceRecords',
+        'meetings',
         'devocionales',
-      ]);
+        'predicas',
+        'anuncios',
+        'recursos',
+        'mensajes',
+        'zonas',
+        'reportes',
+        'users',
+      ];
+      
+      console.log('Removiendo keys:', keysToRemove);
+      await AsyncStorage.multiRemove(keysToRemove);
 
       // Resetear todos los estados a arrays vacíos
       setMembers([]);
@@ -908,10 +920,14 @@ export const [AppProvider, useApp] = createContextHook(() => {
       if (user) {
         const resetUser = {
           ...user,
-          // Resetear cualquier estadística del usuario si existe
+          updatedAt: new Date(),
         };
         setUser(resetUser);
         await AsyncStorage.setItem('currentUser', JSON.stringify(resetUser));
+        
+        // Recrear el usuario en la lista de usuarios
+        await AsyncStorage.setItem('users', JSON.stringify([resetUser]));
+        console.log('Usuario actual mantenido y recreado en lista de usuarios');
       }
 
       console.log('Todos los datos han sido reseteados exitosamente');

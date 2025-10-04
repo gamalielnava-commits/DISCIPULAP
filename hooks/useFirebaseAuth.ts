@@ -57,6 +57,10 @@ export function useFirebaseAuth() {
   const signIn = async (identifier: string, password: string) => {
     try {
       if (!IS_FIREBASE_CONFIGURED) {
+        console.log('Firebase no configurado, autenticando localmente...');
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        
+        // Verificar credenciales de admin por defecto
         if (identifier === 'admin' && password === 'Admin123') {
           const demoUser: User = {
             id: '1',
@@ -72,9 +76,49 @@ export function useFirebaseAuth() {
           } as User;
           setUser(demoUser);
           setIsAuthenticated(true);
+          await AsyncStorage.setItem('currentUser', JSON.stringify(demoUser));
+          console.log('Admin autenticado exitosamente');
           return { success: true };
         }
-        return { success: false, error: 'Credenciales incorrectas. Usuario: admin, Contraseña: Admin123' };
+        
+        // Buscar usuario en la lista de usuarios registrados
+        const storedUsers = await AsyncStorage.getItem('users');
+        if (!storedUsers || storedUsers === 'null' || storedUsers === 'undefined') {
+          console.log('No hay usuarios registrados');
+          return { success: false, error: 'Usuario no encontrado' };
+        }
+        
+        let usersList: User[] = [];
+        try {
+          usersList = JSON.parse(storedUsers);
+          if (!Array.isArray(usersList)) {
+            console.log('Lista de usuarios inválida');
+            return { success: false, error: 'Error al cargar usuarios' };
+          }
+        } catch (e) {
+          console.error('Error parsing users:', e);
+          return { success: false, error: 'Error al cargar usuarios' };
+        }
+        
+        // Buscar usuario por email o username
+        const foundUser = usersList.find(u => 
+          u.email.toLowerCase() === identifier.toLowerCase() ||
+          (u.username && u.username.toLowerCase() === identifier.toLowerCase())
+        );
+        
+        if (!foundUser) {
+          console.log('Usuario no encontrado:', identifier);
+          return { success: false, error: 'Usuario no encontrado' };
+        }
+        
+        // En modo local, aceptar cualquier contraseña para usuarios registrados
+        // (En producción con Firebase, esto se validará correctamente)
+        console.log('Usuario encontrado, autenticando:', foundUser.email);
+        setUser(foundUser);
+        setIsAuthenticated(true);
+        await AsyncStorage.setItem('currentUser', JSON.stringify(foundUser));
+        console.log('Usuario autenticado exitosamente');
+        return { success: true };
       }
 
       let emailToUse = identifier;
@@ -116,6 +160,47 @@ export function useFirebaseAuth() {
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
     try {
       if (!IS_FIREBASE_CONFIGURED) {
+        console.log('Firebase no configurado, creando usuario local...');
+        
+        // Verificar si el email ya existe
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        const storedUsers = await AsyncStorage.getItem('users');
+        let usersList: User[] = [];
+        
+        if (storedUsers && storedUsers !== 'null' && storedUsers !== 'undefined') {
+          try {
+            usersList = JSON.parse(storedUsers);
+            if (!Array.isArray(usersList)) {
+              usersList = [];
+            }
+          } catch (e) {
+            console.error('Error parsing users list:', e);
+            usersList = [];
+          }
+        }
+        
+        // Verificar si el email ya existe
+        const emailExists = usersList.some(u => u.email.toLowerCase() === email.toLowerCase());
+        if (emailExists) {
+          return {
+            success: false,
+            error: 'El email ya está en uso'
+          };
+        }
+        
+        // Verificar si el username ya existe (si se proporcionó)
+        if (userData.username) {
+          const usernameExists = usersList.some(u => 
+            u.username && u.username.toLowerCase() === userData.username?.toLowerCase()
+          );
+          if (usernameExists) {
+            return {
+              success: false,
+              error: 'El nombre de usuario ya está en uso'
+            };
+          }
+        }
+        
         const newUser: User = {
           id: Date.now().toString(),
           email,
@@ -125,11 +210,20 @@ export function useFirebaseAuth() {
           status: 'activo',
           telefono: userData.telefono ?? '',
           fechaNacimiento: userData.fechaNacimiento ?? '',
+          username: userData.username,
           createdAt: new Date(),
           updatedAt: new Date(),
         } as User;
-        setUser(newUser);
-        setIsAuthenticated(true);
+        
+        // Agregar el nuevo usuario a la lista
+        usersList.push(newUser);
+        await AsyncStorage.setItem('users', JSON.stringify(usersList));
+        
+        console.log('Usuario registrado exitosamente:', newUser.email);
+        console.log('Total de usuarios:', usersList.length);
+        
+        // NO establecer el usuario como autenticado automáticamente
+        // El usuario debe iniciar sesión después de registrarse
         return { success: true };
       }
 
