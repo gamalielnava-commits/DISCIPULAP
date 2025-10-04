@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   StyleSheet, 
   Text, 
@@ -10,14 +10,27 @@ import {
   Alert,
   Platform
 } from "react-native";
-import { Users, Plus, Edit2, Trash2, Search, X, User, MapPin, Clock, MoreVertical } from "lucide-react-native";
+import { Users, Plus, Edit2, Trash2, Search, X, User, MapPin, Clock, Trophy, Award, Star } from "lucide-react-native";
 import { useApp } from "@/providers/AppProvider";
 import Colors from "@/constants/colors";
 import { LinearGradient } from 'expo-linear-gradient';
 import AppHeader from '@/components/AppHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { moduloSantidad } from '@/constants/modulo-santidad';
+import { moduloEspirituSanto } from '@/constants/modulo-espiritu-santo';
+
+type UserProgress = {
+  userId: string;
+  nombre: string;
+  apellido: string;
+  totalPuntos: number;
+  preguntasRespondidas: number;
+  porcentajeCompletado: number;
+  modulosCompletados: number;
+};
 
 export default function GroupsScreen() {
-  const { groups, members, addGroup, updateGroup, deleteGroup, addMember, updateMember, deleteMember, permissions, isDarkMode } = useApp();
+  const { groups, members, addGroup, updateGroup, deleteGroup, addMember, updateMember, deleteMember, permissions, isDarkMode, user } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -25,6 +38,10 @@ export default function GroupsScreen() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<any>(null);
   const [editingMember, setEditingMember] = useState<any>(null);
+  const [showScoresModal, setShowScoresModal] = useState(false);
+  const [selectedGroupScores, setSelectedGroupScores] = useState<string | null>(null);
+  const [groupScores, setGroupScores] = useState<UserProgress[]>([]);
+  const [loadingScores, setLoadingScores] = useState(false);
   
   const [groupForm, setGroupForm] = useState({
     nombre: "",
@@ -50,6 +67,115 @@ export default function GroupsScreen() {
   const filteredGroups = groups.filter(g => 
     g.nombre.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  useEffect(() => {
+    if (showScoresModal && selectedGroupScores) {
+      loadGroupScores(selectedGroupScores);
+    }
+  }, [showScoresModal, selectedGroupScores]);
+
+  const loadGroupScores = async (groupId: string) => {
+    setLoadingScores(true);
+    try {
+      const groupMembers = members.filter(m => m.grupoId === groupId);
+      const allUsersProgress: UserProgress[] = [];
+
+      const modulos: Record<string, any> = {
+        santidad: moduloSantidad,
+        espiritu: moduloEspirituSanto,
+      };
+
+      try {
+        const stored = await AsyncStorage.getItem('custom_modulos');
+        if (stored && stored !== 'null' && stored !== 'undefined') {
+          const customModulos = JSON.parse(stored);
+          if (Array.isArray(customModulos)) {
+            customModulos.forEach((modulo: any) => {
+              modulos[modulo.id] = modulo;
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading custom modules:', error);
+      }
+
+      for (const member of groupMembers) {
+        try {
+          const userPreguntas = await AsyncStorage.getItem(`discipulado_preguntas_respondidas_${member.id}`);
+          if (userPreguntas && userPreguntas !== 'null' && userPreguntas !== 'undefined') {
+            const preguntasData = JSON.parse(userPreguntas);
+            let totalPuntos = 0;
+            let preguntasContestadas = 0;
+            let totalPreguntas = 0;
+
+            Object.values(modulos).forEach((modulo: any) => {
+              if (modulo.lecciones) {
+                modulo.lecciones.forEach((leccion: any) => {
+                  if (leccion.secciones) {
+                    leccion.secciones.forEach((seccion: any) => {
+                      if (seccion.preguntas) {
+                        seccion.preguntas.forEach((pregunta: any) => {
+                          totalPreguntas++;
+                          if (preguntasData[pregunta.id]) {
+                            preguntasContestadas++;
+                            totalPuntos += pregunta.puntos ?? 10;
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+            });
+
+            allUsersProgress.push({
+              userId: member.id,
+              nombre: member.nombre,
+              apellido: member.apellido,
+              totalPuntos,
+              preguntasRespondidas: preguntasContestadas,
+              porcentajeCompletado: totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0,
+              modulosCompletados: 0,
+            });
+          } else {
+            allUsersProgress.push({
+              userId: member.id,
+              nombre: member.nombre,
+              apellido: member.apellido,
+              totalPuntos: 0,
+              preguntasRespondidas: 0,
+              porcentajeCompletado: 0,
+              modulosCompletados: 0,
+            });
+          }
+        } catch (memberError) {
+          console.error(`Error loading progress for member ${member.id}:`, memberError);
+          allUsersProgress.push({
+            userId: member.id,
+            nombre: member.nombre,
+            apellido: member.apellido,
+            totalPuntos: 0,
+            preguntasRespondidas: 0,
+            porcentajeCompletado: 0,
+            modulosCompletados: 0,
+          });
+        }
+      }
+
+      const sortedUsers = allUsersProgress.sort((a, b) => b.totalPuntos - a.totalPuntos);
+      setGroupScores(sortedUsers);
+    } catch (error) {
+      console.error('Error loading group scores:', error);
+      Alert.alert('Error', 'No se pudieron cargar los puntajes del grupo');
+    } finally {
+      setLoadingScores(false);
+    }
+  };
+
+  const openScoresModal = (groupId: string) => {
+    setSelectedGroupScores(groupId);
+    setShowScoresModal(true);
+  };
 
   const handleSaveGroup = () => {
     if (!groupForm.nombre || !groupForm.ubicacion || !groupForm.horario) {
@@ -233,16 +359,27 @@ export default function GroupsScreen() {
                 <View style={styles.membersList}>
                   <View style={styles.membersHeader}>
                     <Text style={styles.membersTitle}>Miembros del Grupo</Text>
-                    <TouchableOpacity 
-                      style={styles.addMemberButton}
-                      onPress={() => {
-                        setMemberForm({ ...memberForm, grupoId: group.id });
-                        setShowMemberModal(true);
-                      }}
-                    >
-                      <Plus size={16} color="#2B6CB0" />
-                      <Text style={styles.addMemberText}>Agregar</Text>
-                    </TouchableOpacity>
+                    <View style={styles.membersHeaderActions}>
+                      {(permissions?.canManageGroups || user?.role === 'lider') && (
+                        <TouchableOpacity 
+                          style={styles.scoresButton}
+                          onPress={() => openScoresModal(group.id)}
+                        >
+                          <Trophy size={16} color={colors.primary} />
+                          <Text style={[styles.scoresButtonText, { color: colors.primary }]}>Puntajes</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity 
+                        style={styles.addMemberButton}
+                        onPress={() => {
+                          setMemberForm({ ...memberForm, grupoId: group.id });
+                          setShowMemberModal(true);
+                        }}
+                      >
+                        <Plus size={16} color="#2B6CB0" />
+                        <Text style={styles.addMemberText}>Agregar</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                   
                   {groupMembers.map((member) => (
@@ -468,6 +605,120 @@ export default function GroupsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal de Puntajes */}
+      <Modal
+        visible={showScoresModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowScoresModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.scoresModalContent]}>
+            <View style={styles.modalHeader}>
+              <View style={styles.scoresModalHeader}>
+                <Trophy size={24} color={colors.primary} />
+                <Text style={[styles.modalTitle, { marginLeft: 8 }]}>
+                  Tabla de Puntajes
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowScoresModal(false)}>
+                <X size={24} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
+
+            {loadingScores ? (
+              <View style={styles.loadingContainer}>
+                <Text style={[styles.loadingText, { color: colors.text }]}>Cargando puntajes...</Text>
+              </View>
+            ) : (
+              <ScrollView style={styles.scoresScrollView}>
+                {groupScores.length === 0 ? (
+                  <View style={styles.emptyScoresContainer}>
+                    <Award size={48} color={colors.tabIconDefault} />
+                    <Text style={[styles.emptyScoresText, { color: colors.tabIconDefault }]}>
+                      No hay puntajes registrados aún
+                    </Text>
+                    <Text style={[styles.emptyScoresSubtext, { color: colors.tabIconDefault }]}>
+                      Los miembros deben completar lecciones del discipulado para aparecer aquí
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.scoresTable}>
+                    <View style={[styles.scoresTableHeader, { backgroundColor: colors.surfaceLight }]}>
+                      <Text style={[styles.scoresTableHeaderText, styles.scoresRankColumn, { color: colors.text }]}>#</Text>
+                      <Text style={[styles.scoresTableHeaderText, styles.scoresNameColumn, { color: colors.text }]}>Nombre</Text>
+                      <Text style={[styles.scoresTableHeaderText, styles.scoresPointsColumn, { color: colors.text }]}>Puntos</Text>
+                      <Text style={[styles.scoresTableHeaderText, styles.scoresProgressColumn, { color: colors.text }]}>Progreso</Text>
+                    </View>
+                    {groupScores.map((userProgress, index) => {
+                      const isTopThree = index < 3;
+                      const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+                      const medalColor = isTopThree ? medalColors[index] : colors.tabIconDefault;
+                      
+                      return (
+                        <View 
+                          key={userProgress.userId} 
+                          style={[
+                            styles.scoresTableRow,
+                            { backgroundColor: index % 2 === 0 ? colors.card : colors.background },
+                            isTopThree && { borderLeftWidth: 3, borderLeftColor: medalColor }
+                          ]}
+                        >
+                          <View style={[styles.scoresRankColumn, styles.scoresRankCell]}>
+                            {isTopThree ? (
+                              <View style={[styles.medalContainer, { backgroundColor: medalColor + '20' }]}>
+                                <Trophy size={16} color={medalColor} />
+                                <Text style={[styles.scoresRankText, { color: medalColor, fontWeight: 'bold' }]}>
+                                  {index + 1}
+                                </Text>
+                              </View>
+                            ) : (
+                              <Text style={[styles.scoresRankText, { color: colors.text }]}>{index + 1}</Text>
+                            )}
+                          </View>
+                          <View style={styles.scoresNameColumn}>
+                            <Text style={[styles.scoresNameText, { color: colors.text }]} numberOfLines={1}>
+                              {userProgress.nombre} {userProgress.apellido}
+                            </Text>
+                            <Text style={[styles.scoresQuestionsText, { color: colors.tabIconDefault }]}>
+                              {userProgress.preguntasRespondidas} preguntas
+                            </Text>
+                          </View>
+                          <View style={styles.scoresPointsColumn}>
+                            <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '20' }]}>
+                              <Star size={14} color={colors.primary} />
+                              <Text style={[styles.scoresPointsText, { color: colors.primary }]}>
+                                {userProgress.totalPuntos}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.scoresProgressColumn}>
+                            <View style={styles.progressBarContainer}>
+                              <View 
+                                style={[
+                                  styles.progressBarFill, 
+                                  { 
+                                    width: `${userProgress.porcentajeCompletado}%`,
+                                    backgroundColor: colors.primary
+                                  }
+                                ]} 
+                              />
+                            </View>
+                            <Text style={[styles.scoresProgressText, { color: colors.text }]}>
+                              {userProgress.porcentajeCompletado}%
+                            </Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -602,6 +853,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#2D3748',
+  },
+  membersHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  scoresButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  scoresButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 4,
   },
   addMemberButton: {
     flexDirection: 'row',
@@ -763,5 +1032,133 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  scoresModalContent: {
+    maxHeight: '85%',
+    height: 600,
+  },
+  scoresModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  scoresScrollView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+  },
+  emptyScoresContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyScoresText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyScoresSubtext: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  scoresTable: {
+    flex: 1,
+  },
+  scoresTableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  scoresTableHeaderText: {
+    fontSize: 14,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  scoresTableRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  scoresRankColumn: {
+    width: 50,
+    alignItems: 'center',
+  },
+  scoresRankCell: {
+    justifyContent: 'center',
+  },
+  scoresRankText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  medalContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  scoresNameColumn: {
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  scoresNameText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  scoresQuestionsText: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  scoresPointsColumn: {
+    width: 80,
+    alignItems: 'center',
+  },
+  pointsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 4,
+  },
+  scoresPointsText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  scoresProgressColumn: {
+    width: 100,
+    alignItems: 'center',
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  scoresProgressText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
