@@ -64,8 +64,14 @@ export default function MensajesScreen() {
   const loadMensajes = async () => {
     try {
       setLoading(true);
-      const mensajesData = await FirestoreService.getAll("mensajes", "fechaCreacion");
-      const activeMensajes = mensajesData.filter((m: any) => m.activo !== false);
+      const mensajesData = await FirestoreService.getAll("mensajes");
+      const activeMensajes = mensajesData
+        .filter((m: any) => m.activo !== false)
+        .sort((a: any, b: any) => {
+          const dateA = a.fechaCreacion?.toDate?.() || a.fechaCreacion || a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+          const dateB = b.fechaCreacion?.toDate?.() || b.fechaCreacion || b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+          return dateB - dateA;
+        });
       setMensajes(activeMensajes);
       setFilteredMensajes(activeMensajes);
     } catch (error) {
