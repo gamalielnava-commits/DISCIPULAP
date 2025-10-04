@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -40,18 +40,10 @@ interface Zona {
   discipuladoCompletado: number;
 }
 
-interface Grupo {
-  id: string;
-  nombre: string;
-  lider: string;
-  miembros: number;
-  zonaId: string;
-  asistenciaPromedio: number;
-  discipuladoProgreso: number;
-}
+
 
 export default function ZonasScreen() {
-  const { isDarkMode, user } = useApp();
+  const { isDarkMode, user, members, groups, attendance } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,51 +59,49 @@ export default function ZonasScreen() {
   const [gruposModalVisible, setGruposModalVisible] = useState(false);
   const [selectedGrupos, setSelectedGrupos] = useState<string[]>([]);
 
-  // Datos de ejemplo
-  const [zonas, setZonas] = useState<Zona[]>([
-    {
-      id: '1',
-      nombre: 'Zona Norte',
-      supervisor: 'Carlos Rodríguez',
-      supervisorId: 'sup1',
-      grupos: ['g1', 'g2', 'g3'],
-      miembrosTotal: 45,
-      asistenciaPromedio: 85,
-      discipuladoCompletado: 12,
-    },
-    {
-      id: '2',
-      nombre: 'Zona Sur',
-      supervisor: 'María González',
-      supervisorId: 'sup2',
-      grupos: ['g4', 'g5'],
-      miembrosTotal: 32,
-      asistenciaPromedio: 78,
-      discipuladoCompletado: 8,
-    },
-    {
-      id: '3',
-      nombre: 'Zona Este',
-      supervisor: 'Pedro Martínez',
-      supervisorId: 'sup3',
-      grupos: ['g6', 'g7', 'g8', 'g9'],
-      miembrosTotal: 67,
-      asistenciaPromedio: 92,
-      discipuladoCompletado: 23,
-    },
-  ]);
+  const [zonas, setZonas] = useState<Zona[]>([]);
 
-  const [grupos] = useState<Grupo[]>([
-    { id: 'g1', nombre: 'Grupo Esperanza', lider: 'Ana López', miembros: 15, zonaId: '1', asistenciaPromedio: 88, discipuladoProgreso: 75 },
-    { id: 'g2', nombre: 'Grupo Fe', lider: 'Juan Pérez', miembros: 12, zonaId: '1', asistenciaPromedio: 82, discipuladoProgreso: 60 },
-    { id: 'g3', nombre: 'Grupo Amor', lider: 'Laura Silva', miembros: 18, zonaId: '1', asistenciaPromedio: 85, discipuladoProgreso: 90 },
-    { id: 'g4', nombre: 'Grupo Paz', lider: 'Roberto Díaz', miembros: 20, zonaId: '2', asistenciaPromedio: 75, discipuladoProgreso: 45 },
-    { id: 'g5', nombre: 'Grupo Gracia', lider: 'Carmen Ruiz', miembros: 12, zonaId: '2', asistenciaPromedio: 80, discipuladoProgreso: 70 },
-    { id: 'g6', nombre: 'Grupo Victoria', lider: 'Miguel Ángel', miembros: 22, zonaId: '3', asistenciaPromedio: 95, discipuladoProgreso: 85 },
-    { id: 'g7', nombre: 'Grupo Bendición', lider: 'Patricia Mora', miembros: 15, zonaId: '3', asistenciaPromedio: 90, discipuladoProgreso: 80 },
-    { id: 'g8', nombre: 'Grupo Alabanza', lider: 'Fernando Castro', miembros: 18, zonaId: '3', asistenciaPromedio: 93, discipuladoProgreso: 95 },
-    { id: 'g9', nombre: 'Grupo Unidad', lider: 'Sofía Vargas', miembros: 12, zonaId: '3', asistenciaPromedio: 88, discipuladoProgreso: 65 },
-  ]);
+  // Calcular estadísticas reales de zonas
+  const calculateZoneStats = React.useCallback(() => {
+    const updatedZonas = zonas.map(zona => {
+      // Obtener grupos de esta zona
+      const zoneGroups = groups.filter(g => zona.grupos.includes(g.id));
+      
+      // Calcular miembros totales
+      const miembrosTotal = members.filter(m => 
+        zoneGroups.some(g => g.id === m.grupoId)
+      ).length;
+      
+      // Calcular asistencia promedio
+      const zoneAttendance = attendance.filter(a => 
+        zoneGroups.some(g => g.id === a.grupoId)
+      );
+      
+      let asistenciaPromedio = 0;
+      if (zoneAttendance.length > 0) {
+        const totalAsistentes = zoneAttendance.reduce((sum, a) => sum + a.asistentes.length, 0);
+        asistenciaPromedio = Math.round((totalAsistentes / zoneAttendance.length));
+      }
+      
+      // Calcular discipulado completado
+      const zoneMembersWithDiscipleship = members.filter(m => 
+        zoneGroups.some(g => g.id === m.grupoId) && m.discipulado
+      ).length;
+      
+      return {
+        ...zona,
+        miembrosTotal,
+        asistenciaPromedio: miembrosTotal > 0 ? Math.round((asistenciaPromedio / miembrosTotal) * 100) : 0,
+        discipuladoCompletado: zoneMembersWithDiscipleship,
+      };
+    });
+    
+    setZonas(updatedZonas);
+  }, [zonas, groups, members, attendance]);
+
+  useEffect(() => {
+    calculateZoneStats();
+  }, [calculateZoneStats]);
 
   const filteredZonas = useMemo(() => {
     if (!searchQuery) return zonas;
@@ -184,10 +174,9 @@ export default function ZonasScreen() {
         supervisor: formData.supervisor,
         supervisorId: formData.supervisorId,
         grupos: selectedGrupos,
-        miembrosTotal: selectedGrupos.reduce((acc, gId) => {
-          const grupo = grupos.find(g => g.id === gId);
-          return acc + (grupo?.miembros || 0);
-        }, 0),
+        miembrosTotal: members.filter(m => 
+          selectedGrupos.some(gId => groups.find(g => g.id === gId && g.id === m.grupoId))
+        ).length,
         asistenciaPromedio: 0,
         discipuladoCompletado: 0,
       };
@@ -308,7 +297,7 @@ export default function ZonasScreen() {
     </Pressable>
   );
 
-  const renderGrupoItem = ({ item }: { item: Grupo }) => {
+  const renderGrupoItem = ({ item }: { item: { id: string; nombre: string; lider: string; miembros: number; zonaId: string; asistenciaPromedio: number; discipuladoProgreso: number } }) => {
     const isSelected = selectedGrupos.includes(item.id);
     return (
       <TouchableOpacity
@@ -470,7 +459,15 @@ export default function ZonasScreen() {
             </Text>
 
             <FlatList
-              data={grupos.filter(g => !editMode || !g.zonaId || g.zonaId === selectedZona?.id)}
+              data={groups.map(g => ({
+                id: g.id,
+                nombre: g.nombre,
+                lider: members.find(m => g.lideres?.includes(m.id))?.nombre || 'Sin líder',
+                miembros: members.filter(m => m.grupoId === g.id).length,
+                zonaId: '',
+                asistenciaPromedio: 0,
+                discipuladoProgreso: 0,
+              }))}
               renderItem={renderGrupoItem}
               keyExtractor={item => item.id}
               style={styles.gruposList}
@@ -552,18 +549,25 @@ export default function ZonasScreen() {
               <View style={styles.detailsSection}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Grupos en esta Zona</Text>
                 {selectedZona?.grupos.map(grupoId => {
-                  const grupo = grupos.find(g => g.id === grupoId);
+                  const grupo = groups.find(g => g.id === grupoId);
                   if (!grupo) return null;
+                  const groupMembers = members.filter(m => m.grupoId === grupo.id);
+                  const groupAttendance = attendance.filter(a => a.grupoId === grupo.id);
+                  const avgAttendance = groupAttendance.length > 0
+                    ? Math.round((groupAttendance.reduce((sum, a) => sum + a.asistentes.length, 0) / groupAttendance.length / groupMembers.length) * 100)
+                    : 0;
+                  const liderName = members.find(m => grupo.lideres?.includes(m.id))?.nombre || 'Sin líder';
+                  
                   return (
                     <View key={grupo.id} style={[styles.grupoDetailCard, { backgroundColor: colors.background }]}>
                       <Text style={[styles.grupoDetailName, { color: colors.text }]}>{grupo.nombre}</Text>
-                      <Text style={[styles.grupoDetailInfo, { color: colors.textSecondary }]}>Líder: {grupo.lider}</Text>
+                      <Text style={[styles.grupoDetailInfo, { color: colors.textSecondary }]}>Líder: {liderName}</Text>
                       <View style={styles.grupoDetailStats}>
                         <Text style={[styles.grupoDetailStat, { color: colors.textSecondary }]}>
-                          {grupo.miembros} miembros
+                          {groupMembers.length} miembros
                         </Text>
                         <Text style={[styles.grupoDetailStat, { color: colors.textSecondary }]}>
-                          {grupo.asistenciaPromedio}% asistencia
+                          {avgAttendance}% asistencia
                         </Text>
                       </View>
                     </View>
