@@ -97,10 +97,15 @@ export default function ZonasScreen() {
   }, [zonas, groups, members, attendance]);
 
   useEffect(() => {
+    console.log('Zonas con estadísticas actualizadas:', zonasConEstadisticas.length);
+  }, [zonasConEstadisticas]);
+
+  useEffect(() => {
+    let isMounted = true;
     const loadZonas = async () => {
       try {
         const storedZonas = await AsyncStorage.getItem('zonas');
-        if (storedZonas && storedZonas !== 'null' && storedZonas !== 'undefined') {
+        if (isMounted && storedZonas && storedZonas !== 'null' && storedZonas !== 'undefined') {
           const parsed = JSON.parse(storedZonas);
           if (Array.isArray(parsed)) {
             setZonas(parsed);
@@ -111,6 +116,9 @@ export default function ZonasScreen() {
       }
     };
     loadZonas();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredZonas = useMemo(() => {
