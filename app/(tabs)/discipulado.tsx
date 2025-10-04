@@ -97,52 +97,61 @@ export default function DiscipuladoScreen() {
 
   useEffect(() => {
     guardarDatos();
+    // Recalcular ranking cuando cambian las respuestas
+    if (Object.keys(preguntasRespondidas).length > 0) {
+      calcularRanking();
+    }
   }, [respuestas, preguntasRespondidas, moduloActivo, leccionActiva, seccionActiva]);
 
   const calcularRanking = async () => {
     try {
       const allUsersProgress: UserProgress[] = [];
 
+      // Calcular progreso para cada miembro
       for (const member of members) {
-        const userPreguntas = await AsyncStorage.getItem(`discipulado_preguntas_respondidas_${member.id}`);
-        if (userPreguntas) {
-          const preguntasData = JSON.parse(userPreguntas) as PreguntaRespondida;
-          let totalPuntos = 0;
-          let preguntasContestadas = 0;
-          let totalPreguntas = 0;
+        try {
+          const userPreguntas = await AsyncStorage.getItem(`discipulado_preguntas_respondidas_${member.id}`);
+          if (userPreguntas && userPreguntas !== 'null' && userPreguntas !== 'undefined') {
+            const preguntasData = JSON.parse(userPreguntas) as PreguntaRespondida;
+            let totalPuntos = 0;
+            let preguntasContestadas = 0;
+            let totalPreguntas = 0;
 
-          Object.values(modulos).forEach(modulo => {
-            modulo.lecciones.forEach(leccion => {
-              leccion.secciones.forEach(seccion => {
-                if (seccion.preguntas) {
-                  seccion.preguntas.forEach(pregunta => {
-                    totalPreguntas++;
-                    if (preguntasData[pregunta.id]) {
-                      preguntasContestadas++;
-                      totalPuntos += pregunta.puntos ?? 10;
-                    }
-                  });
-                }
+            Object.values(modulos).forEach(modulo => {
+              modulo.lecciones.forEach(leccion => {
+                leccion.secciones.forEach(seccion => {
+                  if (seccion.preguntas) {
+                    seccion.preguntas.forEach(pregunta => {
+                      totalPreguntas++;
+                      if (preguntasData[pregunta.id]) {
+                        preguntasContestadas++;
+                        totalPuntos += pregunta.puntos ?? 10;
+                      }
+                    });
+                  }
+                });
               });
             });
-          });
 
-          if (preguntasContestadas > 0) {
-            allUsersProgress.push({
-              userId: member.id,
-              nombre: member.nombre,
-              apellido: member.apellido,
-              totalPuntos,
-              preguntasRespondidas: preguntasContestadas,
-              porcentajeCompletado: totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0,
-              modulosCompletados: 0,
-            });
+            if (preguntasContestadas > 0) {
+              allUsersProgress.push({
+                userId: member.id,
+                nombre: member.nombre,
+                apellido: member.apellido,
+                totalPuntos,
+                preguntasRespondidas: preguntasContestadas,
+                porcentajeCompletado: totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0,
+                modulosCompletados: 0,
+              });
+            }
           }
+        } catch (memberError) {
+          console.error(`Error loading progress for member ${member.id}:`, memberError);
         }
       }
 
-      const currentUserPreguntas = preguntasRespondidas;
-      if (Object.keys(currentUserPreguntas).length > 0) {
+      // Calcular progreso del usuario actual
+      if (user && Object.keys(preguntasRespondidas).length > 0) {
         let totalPuntos = 0;
         let preguntasContestadas = 0;
         let totalPreguntas = 0;
@@ -153,7 +162,7 @@ export default function DiscipuladoScreen() {
               if (seccion.preguntas) {
                 seccion.preguntas.forEach(pregunta => {
                   totalPreguntas++;
-                  if (currentUserPreguntas[pregunta.id]) {
+                  if (preguntasRespondidas[pregunta.id]) {
                     preguntasContestadas++;
                     totalPuntos += pregunta.puntos ?? 10;
                   }
@@ -163,17 +172,29 @@ export default function DiscipuladoScreen() {
           });
         });
 
-        const currentUserExists = allUsersProgress.find(u => u.userId === 'current');
+        // Verificar si el usuario actual ya está en la lista (por si es un miembro)
+        const currentUserExists = allUsersProgress.find(u => u.userId === user.id);
         if (!currentUserExists && preguntasContestadas > 0) {
           allUsersProgress.push({
-            userId: 'current',
-            nombre: 'Usuario',
-            apellido: 'Actual',
+            userId: user.id,
+            nombre: user.nombre || 'Usuario',
+            apellido: user.apellido || 'Actual',
             totalPuntos,
             preguntasRespondidas: preguntasContestadas,
             porcentajeCompletado: totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0,
             modulosCompletados: 0,
           });
+        } else if (currentUserExists && preguntasContestadas > 0) {
+          // Actualizar el progreso del usuario actual si ya existe
+          const index = allUsersProgress.findIndex(u => u.userId === user.id);
+          if (index !== -1) {
+            allUsersProgress[index] = {
+              ...allUsersProgress[index],
+              totalPuntos,
+              preguntasRespondidas: preguntasContestadas,
+              porcentajeCompletado: totalPreguntas > 0 ? Math.round((preguntasContestadas / totalPreguntas) * 100) : 0,
+            };
+          }
         }
       }
 
@@ -201,8 +222,23 @@ export default function DiscipuladoScreen() {
 
   const cargarDatos = async () => {
     try {
-      const respuestasGuardadas = await AsyncStorage.getItem('discipulado_respuestas');
-      const preguntasGuardadas = await AsyncStorage.getItem('discipulado_preguntas_respondidas');
+      // Intentar cargar datos específicos del usuario primero
+      let respuestasGuardadas = null;
+      let preguntasGuardadas = null;
+      
+      if (user) {
+        respuestasGuardadas = await AsyncStorage.getItem(`discipulado_respuestas_${user.id}`);
+        preguntasGuardadas = await AsyncStorage.getItem(`discipulado_preguntas_respondidas_${user.id}`);
+      }
+      
+      // Si no hay datos específicos del usuario, cargar datos genéricos
+      if (!respuestasGuardadas) {
+        respuestasGuardadas = await AsyncStorage.getItem('discipulado_respuestas');
+      }
+      if (!preguntasGuardadas) {
+        preguntasGuardadas = await AsyncStorage.getItem('discipulado_preguntas_respondidas');
+      }
+      
       const estadoGuardado = await AsyncStorage.getItem('discipulado_estado');
 
       if (respuestasGuardadas) {
@@ -269,8 +305,19 @@ export default function DiscipuladoScreen() {
 
   const guardarDatos = async () => {
     try {
-      await AsyncStorage.setItem('discipulado_respuestas', JSON.stringify(respuestas));
-      await AsyncStorage.setItem('discipulado_preguntas_respondidas', JSON.stringify(preguntasRespondidas));
+      // Guardar respuestas y preguntas respondidas del usuario actual
+      if (user) {
+        await AsyncStorage.setItem(`discipulado_respuestas_${user.id}`, JSON.stringify(respuestas));
+        await AsyncStorage.setItem(`discipulado_preguntas_respondidas_${user.id}`, JSON.stringify(preguntasRespondidas));
+        
+        // También guardar en las claves genéricas para compatibilidad
+        await AsyncStorage.setItem('discipulado_respuestas', JSON.stringify(respuestas));
+        await AsyncStorage.setItem('discipulado_preguntas_respondidas', JSON.stringify(preguntasRespondidas));
+      } else {
+        await AsyncStorage.setItem('discipulado_respuestas', JSON.stringify(respuestas));
+        await AsyncStorage.setItem('discipulado_preguntas_respondidas', JSON.stringify(preguntasRespondidas));
+      }
+      
       const estado = { moduloActivo, leccionActiva, seccionActiva };
       await AsyncStorage.setItem('discipulado_estado', JSON.stringify(estado));
     } catch (error) {
