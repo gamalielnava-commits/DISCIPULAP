@@ -65,6 +65,7 @@ export default function LoginScreen() {
 
   const LogoContainer = Platform.OS !== 'web' ? BlurView : View;
   const FormContainer = Platform.OS !== 'web' ? BlurView : View;
+  const DesktopWrapper = Platform.OS !== 'web' && isDesktop ? BlurView : View;
 
   return (
     <View style={styles.container}>
@@ -90,7 +91,10 @@ export default function LoginScreen() {
             contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
             showsVerticalScrollIndicator={false}
           >
-            <View style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}>
+            <DesktopWrapper 
+              {...(Platform.OS !== 'web' && isDesktop ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
+              style={[styles.contentWrapper, isDesktop && styles.contentWrapperDesktop]}
+            >
             <LogoContainer 
               {...(Platform.OS !== 'web' ? { intensity: Platform.OS === 'ios' ? 50 : 60, tint: 'light' as const } : {})}
               style={styles.logoContainer}
@@ -192,7 +196,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             </FormContainer>
-            </View>
+            </DesktopWrapper>
           </ScrollView>
         </KeyboardAvoidingView>
       </ImageBackground>
@@ -234,12 +238,15 @@ const styles = StyleSheet.create({
     maxWidth: 480,
     alignSelf: 'center',
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 24,
     padding: 40,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
     shadowRadius: 20,
   },
   logoContainer: {
@@ -268,8 +275,10 @@ const styles = StyleSheet.create({
   titleDesktop: {
     fontSize: 32,
     marginTop: 28,
-    color: '#1F2937',
-    textShadowColor: 'transparent',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 15,
@@ -282,8 +291,10 @@ const styles = StyleSheet.create({
   subtitleDesktop: {
     fontSize: 16,
     marginTop: 10,
-    color: '#6B7280',
-    textShadowColor: 'transparent',
+    color: '#E5E7EB',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   formContainer: {
     width: '100%',
@@ -301,11 +312,14 @@ const styles = StyleSheet.create({
   formContainerDesktop: {
     width: '100%',
     backgroundColor: 'transparent',
+    borderWidth: 0,
+    borderColor: 'transparent',
     shadowColor: 'transparent',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0,
     shadowRadius: 0,
     padding: 0,
+    marginTop: 0,
   },
   errorContainer: {
     backgroundColor: '#FEE2E2',
@@ -332,6 +346,9 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
     letterSpacing: 0.3,
+    ...(Platform.OS === 'web' && width >= 768 ? {
+      textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    } : {}),
   },
   inputContainer: {
     flexDirection: 'row',
