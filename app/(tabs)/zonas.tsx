@@ -96,9 +96,7 @@ export default function ZonasScreen() {
     });
   }, [zonas, groups, members, attendance]);
 
-  useEffect(() => {
-    console.log('Zonas con estadísticas actualizadas:', zonasConEstadisticas.length);
-  }, [zonasConEstadisticas]);
+
 
   useEffect(() => {
     let isMounted = true;
