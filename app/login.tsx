@@ -11,11 +11,12 @@ import {
   ActivityIndicator,
   Dimensions,
   ImageBackground,
+  Image,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Mail, Lock, Eye, EyeOff, Chrome } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
 
@@ -233,7 +234,11 @@ export default function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Iniciar sesión con Google"
               >
-                <Chrome size={24} color="#4285F4" />
+                <Image 
+                  source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg' }}
+                  style={styles.googleIcon}
+                  resizeMode="contain"
+                />
                 <Text style={styles.socialButtonText}>Google</Text>
               </TouchableOpacity>
 
@@ -246,7 +251,11 @@ export default function LoginScreen() {
                   accessibilityRole="button"
                   accessibilityLabel="Iniciar sesión con Apple"
                 >
-                  <Text style={styles.appleIcon}></Text>
+                  <Image 
+                    source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/apple.svg' }}
+                    style={styles.appleIcon}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.socialButtonText}>Apple</Text>
                 </TouchableOpacity>
               )}
@@ -528,8 +537,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  googleIcon: {
+    width: 20,
+    height: 20,
+  },
   appleIcon: {
-    fontSize: 24,
-    color: '#000000',
+    width: 20,
+    height: 20,
   },
 });
