@@ -15,7 +15,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, Chrome } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
 
@@ -35,7 +35,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const { signIn: firebaseSignIn } = useFirebaseAuth();
+  const { signIn: firebaseSignIn, signInWithGoogle, signInWithApple } = useFirebaseAuth();
 
   const handleLogin = async () => {
     const id = identifier?.trim() ?? '';
@@ -58,6 +58,44 @@ export default function LoginScreen() {
     } catch (err) {
       console.error('Error en login:', err);
       setError('Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signInWithGoogle();
+      if (result.success) {
+        router.replace('/home');
+      } else {
+        setError(result.error || 'Error al iniciar sesión con Google');
+      }
+    } catch (err) {
+      console.error('Error en Google sign in:', err);
+      setError('Error al iniciar sesión con Google');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signInWithApple();
+      if (result.success) {
+        router.replace('/home');
+      } else {
+        setError(result.error || 'Error al iniciar sesión con Apple');
+      }
+    } catch (err) {
+      console.error('Error en Apple sign in:', err);
+      setError('Error al iniciar sesión con Apple');
     } finally {
       setLoading(false);
     }
@@ -179,6 +217,40 @@ export default function LoginScreen() {
                 <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
               )}
             </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>o continuar con</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.socialButtonsContainer}>
+              <TouchableOpacity 
+                style={styles.socialButton}
+                onPress={handleGoogleSignIn}
+                disabled={loading}
+                testID="google-signin-button"
+                accessibilityRole="button"
+                accessibilityLabel="Iniciar sesión con Google"
+              >
+                <Chrome size={24} color="#4285F4" />
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+
+              {(Platform.OS === 'ios' || Platform.OS === 'web') && (
+                <TouchableOpacity 
+                  style={styles.socialButton}
+                  onPress={handleAppleSignIn}
+                  disabled={loading}
+                  testID="apple-signin-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="Iniciar sesión con Apple"
+                >
+                  <Text style={styles.appleIcon}></Text>
+                  <Text style={styles.socialButtonText}>Apple</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
@@ -428,5 +500,36 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 16,
     textDecorationLine: 'underline',
+  },
+  socialButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    gap: 8,
+  },
+  socialButtonText: {
+    color: '#1F2937',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  appleIcon: {
+    fontSize: 24,
+    color: '#000000',
   },
 });
