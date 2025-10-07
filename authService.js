@@ -1,74 +1,58 @@
+import { auth, db } from "./firebaseConfig";
 import { 
   createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  updateProfile
-} from 'firebase/auth';
-import { auth } from './firebaseConfig';
+  signInWithEmailAndPassword, 
+  signOut 
+} from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
-export const register = async (email, password, displayName = null) => {
+export const registerUser = async (nombre, email, password, rol = "miembro") => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
-    if (displayName && userCredential.user) {
-      await updateProfile(userCredential.user, {
-        displayName: displayName
-      });
-    }
-    
-    console.log('Usuario registrado exitosamente:', userCredential.user.email);
-    return userCredential.user;
+    const user = userCredential.user;
+
+    await setDoc(doc(db, "usuarios", user.uid), {
+      nombre,
+      email,
+      rol,
+      fechaRegistro: new Date().toISOString(),
+      activo: true,
+    });
+
+    console.log("✅ Usuario registrado y guardado en Firestore:", nombre);
+    return user;
   } catch (error) {
-    console.error('Error al registrar usuario:', error.code, error.message);
+    console.error("❌ Error al registrar usuario:", error.message);
     throw error;
   }
 };
 
-export const login = async (email, password) => {
+export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log('Usuario autenticado exitosamente:', userCredential.user.email);
-    return userCredential.user;
-  } catch (error) {
-    console.error('Error al iniciar sesión:', error.code, error.message);
-    throw error;
-  }
-};
+    const user = userCredential.user;
 
-export const logout = async () => {
-  try {
-    await firebaseSignOut(auth);
-    console.log('Usuario cerró sesión exitosamente');
-  } catch (error) {
-    console.error('Error al cerrar sesión:', error.code, error.message);
-    throw error;
-  }
-};
+    const docRef = doc(db, "usuarios", user.uid);
+    const docSnap = await getDoc(docRef);
 
-export const resetPassword = async (email) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    console.log('Correo de restablecimiento enviado a:', email);
-  } catch (error) {
-    console.error('Error al enviar correo de restablecimiento:', error.code, error.message);
-    throw error;
-  }
-};
-
-export const subscribeToAuthChanges = (callback) => {
-  return onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log('Usuario autenticado:', user.email);
-      callback(user);
+    if (docSnap.exists()) {
+      console.log("✅ Sesión iniciada:", docSnap.data());
+      return docSnap.data();
     } else {
-      console.log('No hay usuario autenticado');
-      callback(null);
+      console.warn("⚠️ Usuario autenticado pero sin documento en Firestore.");
+      return null;
     }
-  });
+  } catch (error) {
+    console.error("❌ Error al iniciar sesión:", error.message);
+    throw error;
+  }
 };
 
-export const getCurrentUser = () => {
-  return auth.currentUser;
+export const logoutUser = async () => {
+  try {
+    await signOut(auth);
+    console.log("👋 Sesión cerrada correctamente.");
+  } catch (error) {
+    console.error("❌ Error al cerrar sesión:", error.message);
+  }
 };
