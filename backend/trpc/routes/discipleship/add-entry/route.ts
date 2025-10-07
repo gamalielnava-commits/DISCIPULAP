@@ -10,7 +10,7 @@ export default publicProcedure
       lessonId: z.string().optional(),
       note: z.string().optional(),
       checkpoint: z.enum(["inicio", "medio", "fin"]).optional(),
-      extra: z.record(z.any()).optional(),
+      extra: z.record(z.string(), z.any()).optional(),
     })
   )
   .mutation(async ({ input }) => {
