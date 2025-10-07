@@ -1,5 +1,6 @@
 import '../firebaseConfig';
 import { testFirebase } from '../testFirebase';
+import { initializeFirestoreStructure } from '../firestoreSetup';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -113,6 +114,7 @@ export default function RootLayout() {
       SplashScreen.hideAsync().catch(() => {});
     }
     testFirebase();
+    initializeFirestoreStructure();
   }, []);
 
   return (
