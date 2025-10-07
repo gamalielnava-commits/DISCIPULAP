@@ -28,7 +28,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { useAuth } from "@/providers/AppProvider";
+import { useApp } from "@/providers/AppProvider";
 import { uploadImage } from "@/utils/imageUpload";
 import * as ImagePicker from "expo-image-picker";
 
@@ -45,7 +45,7 @@ type Mensaje = {
 };
 
 export default function MensajesScreen() {
-  const { user } = useAuth();
+  const { user } = useApp();
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [filteredMensajes, setFilteredMensajes] = useState<Mensaje[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -158,8 +158,8 @@ export default function MensajesScreen() {
         const mensajesRef = collection(db, "mensajes");
         await addDoc(mensajesRef, {
           ...formData,
-          creadoPor: user?.uid || "",
-          creadoPorNombre: user?.displayName || user?.email || "Usuario",
+          creadoPor: user?.id || "",
+          creadoPorNombre: `${user?.nombre || ''} ${user?.apellido || ''}`.trim() || user?.email || "Usuario",
           fechaCreacion: serverTimestamp(),
           activo: true,
         });
