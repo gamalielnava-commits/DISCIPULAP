@@ -4,6 +4,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Reglas para la colección de usuarios
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
     match /usuarios/{userId} {
       allow read: if true;
       allow write: if true;
@@ -11,6 +17,12 @@ service cloud.firestore {
     }
     
     // Reglas para la colección de grupos
+    match /groups/{groupId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
     match /grupos/{groupId} {
       allow read: if true;
       allow write: if true;
@@ -25,6 +37,12 @@ service cloud.firestore {
     }
     
     // Reglas para la colección de recursos
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
     match /recursos/{resourceId} {
       allow read: if true;
       allow write: if true;
@@ -45,6 +63,88 @@ service cloud.firestore {
     
     // Reglas para la colección de mensajes
     match /mensajes/{mensajeId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para progreso de usuario
+    match /userProgress/{progressId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para discipulado
+    match /discipleship/{entryId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para sermones
+    match /sermons/{sermonId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    match /sermonSeries/{seriesId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para estadísticas
+    match /analytics/{analyticsId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    match /stats/{statId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para miembros
+    match /members/{memberId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para asistencia
+    match /attendance/{attendanceId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para anuncios
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para zonas
+    match /zones/{zoneId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para roles de miembros de grupo
+    match /groupMemberRoles/{roleId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
+    
+    // Reglas para permisos personalizados
+    match /customPermissions/{permissionId} {
       allow read: if true;
       allow write: if true;
       allow create: if true;
