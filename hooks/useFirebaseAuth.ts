@@ -10,61 +10,79 @@ export function useFirebaseAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    let unsubscribe: (() => void) | undefined;
+
     const initAuth = async () => {
-      if (IS_FIREBASE_CONFIGURED) {
-        console.log('Firebase configured: using Firebase auth');
-        
-        const unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
-          try {
-            if (firebaseUser) {
-              const userProfile = await AuthService.getUserProfile(firebaseUser.uid);
-              if (userProfile) {
-                setUser(userProfile);
-                setIsAuthenticated(true);
-              } else {
-                const basicProfile: Partial<User> = {
-                  nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
-                  apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
-                  email: firebaseUser.email || '',
-                  role: 'miembro',
-                  status: 'activo',
-                };
-                await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
-                const newProfile = await AuthService.getUserProfile(firebaseUser.uid);
-                if (newProfile) {
-                  setUser(newProfile);
+      try {
+        if (IS_FIREBASE_CONFIGURED) {
+          console.log('Firebase configured: using Firebase auth');
+          
+          unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
+            if (!mounted) return;
+            
+            try {
+              if (firebaseUser) {
+                const userProfile = await AuthService.getUserProfile(firebaseUser.uid);
+                if (userProfile && mounted) {
+                  setUser(userProfile);
                   setIsAuthenticated(true);
+                } else if (mounted) {
+                  const basicProfile: Partial<User> = {
+                    nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
+                    apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+                    email: firebaseUser.email || '',
+                    role: 'miembro',
+                    status: 'activo',
+                  };
+                  await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
+                  const newProfile = await AuthService.getUserProfile(firebaseUser.uid);
+                  if (newProfile && mounted) {
+                    setUser(newProfile);
+                    setIsAuthenticated(true);
+                  }
                 }
+              } else if (mounted) {
+                setUser(null);
+                setIsAuthenticated(false);
               }
-            } else {
-              setUser(null);
-              setIsAuthenticated(false);
+            } catch (error) {
+              console.error('Error in auth state change:', error);
+              if (mounted) {
+                setUser(null);
+                setIsAuthenticated(false);
+              }
+            } finally {
+              if (mounted) {
+                setLoading(false);
+              }
             }
-          } catch (error) {
-            console.error('Error in auth state change:', error);
-            setUser(null);
-            setIsAuthenticated(false);
-          } finally {
+          });
+        } else {
+          console.log('Firebase not configured. Using local auth with persistence.');
+          
+          // En modo local, el AppProvider ya carga el usuario desde AsyncStorage
+          // Esperamos a que AppProvider termine de cargar antes de marcar loading como false
+          if (!appIsLoading && mounted) {
             setLoading(false);
           }
-        });
-
-        return unsubscribe;
-      } else {
-        console.log('Firebase not configured. Using local auth with persistence.');
-        console.log('useFirebaseAuth - isAuthenticated from AppProvider:', isAuthenticated);
-        console.log('useFirebaseAuth - user from AppProvider:', user?.email);
-        console.log('useFirebaseAuth - appIsLoading:', appIsLoading);
-        
-        // En modo local, el AppProvider ya carga el usuario desde AsyncStorage
-        // Esperamos a que AppProvider termine de cargar antes de marcar loading como false
-        if (!appIsLoading) {
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
           setLoading(false);
         }
       }
     };
 
     initAuth();
+
+    return () => {
+      mounted = false;
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [setUser, setIsAuthenticated, appIsLoading]);
 
   const signIn = async (identifier: string, password: string) => {

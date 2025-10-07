@@ -93,13 +93,21 @@ export const [AppProvider, useApp] = createContextHook(() => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Clear any potentially corrupted data first
-        await clearCorruptedData();
-        await loadData();
-        await loadUser();
-        await loadThemePreference();
+        // Run initialization with timeout to prevent hydration blocking
+        await Promise.race([
+          Promise.all([
+            clearCorruptedData(),
+            loadData(),
+            loadUser(),
+            loadThemePreference()
+          ]),
+          new Promise((resolve) => setTimeout(resolve, 3000))
+        ]);
       } catch (error) {
         console.error('Error initializing app:', error);
+      } finally {
+        // Ensure loading is set to false even if initialization times out
+        setIsLoading(false);
       }
     };
     initializeApp();

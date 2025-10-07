@@ -115,8 +115,14 @@ export default function RootLayout() {
     }
     
     const initFirebase = async () => {
-      await verifyFirebaseConnection();
-      await createAdminUser();
+      try {
+        await Promise.race([
+          Promise.all([verifyFirebaseConnection(), createAdminUser()]),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase init timeout')), 5000))
+        ]);
+      } catch (error) {
+        console.log('Firebase initialization skipped or timed out:', error);
+      }
     };
     
     initFirebase();
