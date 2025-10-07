@@ -398,13 +398,36 @@ export default function ZonasScreen() {
         />
       </View>
 
-      <FlatList
-        data={filteredZonas}
-        renderItem={renderZonaCard}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {filteredZonas.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <MapPin size={64} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            {searchQuery ? 'No se encontraron zonas' : 'No hay zonas creadas'}
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            {searchQuery 
+              ? 'Intenta con otro término de búsqueda'
+              : 'Comienza creando tu primera zona'}
+          </Text>
+          {!searchQuery && (
+            <TouchableOpacity
+              style={[styles.emptyButton, { backgroundColor: colors.primary }]}
+              onPress={handleAddZona}
+            >
+              <Plus size={20} color="#fff" />
+              <Text style={styles.emptyButtonText}>Crear Primera Zona</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <FlatList
+          data={filteredZonas}
+          renderItem={renderZonaCard}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {/* Modal para agregar/editar zona */}
       <Modal
@@ -975,6 +998,38 @@ const styles = StyleSheet.create({
   detailActionText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600' as const,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingTop: 60,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    marginTop: 20,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  emptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+  },
+  emptyButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600' as const,
   },
 });
