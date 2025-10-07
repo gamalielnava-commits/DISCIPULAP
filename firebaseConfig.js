@@ -5,12 +5,13 @@ import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { Platform } from 'react-native';
 
 const env = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyATOSjJ073YgRz80bBUPa4OK0rEBov0mCU',
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || 'discipulapp-8d99c.firebaseapp.com',
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || 'discipulapp-8d99c',
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || 'discipulapp-8d99c.appspot.com',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '14467379651',
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '1:14467379651:web:9cd9e632474fb9dedcc412',
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || 'G-65VZ57LGFH',
 };
 
 function looksValidFirebaseConfig(e) {
@@ -35,6 +36,7 @@ const firebaseConfig = IS_FIREBASE_CONFIGURED
       storageBucket: env.storageBucket,
       messagingSenderId: env.messagingSenderId,
       appId: env.appId,
+      measurementId: env.measurementId,
     }
   : {
       apiKey: 'invalid',
@@ -47,6 +49,14 @@ const firebaseConfig = IS_FIREBASE_CONFIGURED
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Log Firebase connection status
+if (IS_FIREBASE_CONFIGURED) {
+  console.log('Firebase conectado:', app.name);
+  console.log('Proyecto:', firebaseConfig.projectId);
+} else {
+  console.warn('Firebase no está configurado correctamente. Verifica las variables de entorno.');
+}
 
 // Initialize Firebase services
 export const auth = getAuth(app);
