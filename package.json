@@ -20,6 +20,7 @@
     "@firebase/firestore": "^4.9.2",
     "@firebase/storage": "^0.14.0",
     "@hono/trpc-server": "^0.4.0",
+    "@netlify/functions": "^4.2.7",
     "@nkzw/create-context-hook": "^1.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/native": "^7.1.6",
