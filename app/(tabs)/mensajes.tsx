@@ -12,25 +12,25 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { Plus, Search, X, Trash2, Edit, AlertCircle } from "lucide-react-native";
-import { db, IS_FIREBASE_CONFIGURED } from "@/services/firebase";
+import { db } from "@/services/firebase";
 import {
   collection,
   addDoc,
-  getDocs,
   deleteDoc,
   doc,
   query,
   orderBy,
   where,
+  serverTimestamp,
   updateDoc,
-  Timestamp,
+  onSnapshot,
 } from "firebase/firestore";
-import { useApp } from "@/providers/AppProvider";
+import { useAuth } from "@/providers/AppProvider";
 import { uploadImage } from "@/utils/imageUpload";
 import * as ImagePicker from "expo-image-picker";
-import Colors from "@/constants/colors";
 
 type Mensaje = {
   id: string;
@@ -41,13 +41,11 @@ type Mensaje = {
   creadoPor: string;
   creadoPorNombre: string;
   fechaCreacion: any;
-  createdAt?: any;
   activo: boolean;
 };
 
 export default function MensajesScreen() {
-  const { user, isDarkMode } = useApp();
-  const colors = isDarkMode ? Colors.dark : Colors.light;
+  const { user } = useAuth();
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [filteredMensajes, setFilteredMensajes] = useState<Mensaje[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,80 +61,43 @@ export default function MensajesScreen() {
     tipo: "general" as "general" | "importante" | "urgente",
   });
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.email === "admin@example.com";
 
   useEffect(() => {
-    loadMensajes();
+    const mensajesRef = collection(db, "mensajes");
+    const q = query(
+      mensajesRef,
+      where("activo", "==", true),
+      orderBy("fechaCreacion", "desc")
+    );
+
+    setLoading(true);
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const mensajesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Mensaje[];
+
+        setMensajes(mensajesData);
+        setFilteredMensajes(mensajesData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error loading mensajes:", error);
+        Alert.alert("Error", "No se pudieron cargar los mensajes");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     filterMensajes();
   }, [searchQuery, mensajes]);
-
-  const loadMensajes = async () => {
-    try {
-      setLoading(true);
-      console.log("=== CARGANDO MENSAJES ===");
-      console.log("Firebase configurado:", IS_FIREBASE_CONFIGURED);
-      
-      if (!IS_FIREBASE_CONFIGURED) {
-        console.warn("Firebase no está configurado. Por favor configura las credenciales en .env");
-        Alert.alert(
-          "Firebase no configurado",
-          "Por favor configura las credenciales de Firebase en el archivo .env para usar esta función."
-        );
-        setMensajes([]);
-        setFilteredMensajes([]);
-        return;
-      }
-      
-      const mensajesRef = collection(db, "mensajes");
-      console.log("Colección de mensajes creada");
-      
-      // Primero intentar obtener todos los mensajes sin filtros complejos
-      const snapshot = await getDocs(mensajesRef);
-      console.log("Total de documentos en mensajes:", snapshot.size);
-      
-      const mensajesData = snapshot.docs
-        .map((doc) => {
-          const data = doc.data();
-          console.log("Documento:", doc.id, data);
-          return {
-            id: doc.id,
-            ...data,
-            fechaCreacion: data.fechaCreacion?.toDate?.() || new Date(),
-          };
-        })
-        .filter((m: any) => m.activo !== false)
-        .sort((a: any, b: any) => {
-          const dateA = a.fechaCreacion instanceof Date ? a.fechaCreacion : new Date(0);
-          const dateB = b.fechaCreacion instanceof Date ? b.fechaCreacion : new Date(0);
-          return dateB.getTime() - dateA.getTime();
-        }) as Mensaje[];
-
-      console.log("Mensajes activos procesados:", mensajesData.length);
-      setMensajes(mensajesData);
-      setFilteredMensajes(mensajesData);
-    } catch (error: any) {
-      console.error("Error loading mensajes:", error);
-      console.error("Error code:", error?.code);
-      console.error("Error message:", error?.message);
-      
-      let errorMessage = "No se pudieron cargar los mensajes";
-      
-      if (error?.code === 'failed-precondition' || error?.message?.includes('index')) {
-        errorMessage = "Se necesita crear un índice en Firebase. Por favor revisa la consola de Firebase.";
-      } else if (error?.code === 'permission-denied') {
-        errorMessage = "No tienes permisos para acceder a los mensajes. Verifica las reglas de seguridad de Firebase.";
-      } else if (error?.message) {
-        errorMessage = error.message;
-      }
-      
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filterMensajes = () => {
     if (!searchQuery.trim()) {
@@ -184,7 +145,6 @@ export default function MensajesScreen() {
 
     try {
       setUploading(true);
-      console.log("Guardando mensaje...", formData);
 
       if (editingMensaje) {
         const mensajeRef = doc(db, "mensajes", editingMensaje.id);
@@ -193,31 +153,26 @@ export default function MensajesScreen() {
           contenido: formData.contenido,
           imagenUrl: formData.imagenUrl,
           tipo: formData.tipo,
-          updatedAt: Timestamp.now(),
+          fechaActualizacion: serverTimestamp(),
         });
-        console.log("Mensaje actualizado exitosamente");
         Alert.alert("Éxito", "Mensaje actualizado correctamente");
       } else {
         const mensajesRef = collection(db, "mensajes");
-        const newMensaje = {
+        await addDoc(mensajesRef, {
           ...formData,
-          creadoPor: user?.id || "",
-          creadoPorNombre: `${user?.nombre || ""} ${user?.apellido || ""}`.trim() || user?.email || "Usuario",
-          fechaCreacion: Timestamp.now(),
+          creadoPor: user?.uid || "",
+          creadoPorNombre: user?.displayName || user?.email || "Usuario",
+          fechaCreacion: serverTimestamp(),
           activo: true,
-        };
-        console.log("Creando nuevo mensaje:", newMensaje);
-        await addDoc(mensajesRef, newMensaje);
-        console.log("Mensaje creado exitosamente");
+        });
         Alert.alert("Éxito", "Mensaje creado correctamente");
       }
 
       resetForm();
       setModalVisible(false);
-      await loadMensajes();
     } catch (error) {
       console.error("Error saving mensaje:", error);
-      Alert.alert("Error", "No se pudo guardar el mensaje: " + (error as Error).message);
+      Alert.alert("Error", "No se pudo guardar el mensaje");
     } finally {
       setUploading(false);
     }
@@ -234,15 +189,12 @@ export default function MensajesScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              console.log("Eliminando mensaje:", id);
               const mensajeRef = doc(db, "mensajes", id);
               await deleteDoc(mensajeRef);
-              console.log("Mensaje eliminado exitosamente");
               Alert.alert("Éxito", "Mensaje eliminado correctamente");
-              await loadMensajes();
             } catch (error) {
               console.error("Error deleting mensaje:", error);
-              Alert.alert("Error", "No se pudo eliminar el mensaje: " + (error as Error).message);
+              Alert.alert("Error", "No se pudo eliminar el mensaje");
             }
           },
         },
@@ -294,7 +246,7 @@ export default function MensajesScreen() {
   };
 
   const renderMensaje = ({ item }: { item: Mensaje }) => (
-    <View style={[styles.mensajeCard, { backgroundColor: colors.card }]}>
+    <View style={styles.mensajeCard}>
       <View style={[styles.tipoIndicator, { backgroundColor: getTipoColor(item.tipo) }]}>
         <Text style={styles.tipoText}>{getTipoLabel(item.tipo)}</Text>
       </View>
@@ -304,19 +256,13 @@ export default function MensajesScreen() {
       )}
 
       <View style={styles.mensajeContent}>
-        <Text style={[styles.mensajeTitulo, { color: colors.text }]}>{item.titulo}</Text>
-        <Text style={[styles.mensajeContenido, { color: colors.tabIconDefault }]}>{item.contenido}</Text>
+        <Text style={styles.mensajeTitulo}>{item.titulo}</Text>
+        <Text style={styles.mensajeContenido}>{item.contenido}</Text>
 
         <View style={styles.mensajeFooter}>
-          <Text style={[styles.mensajeAutor, { color: colors.tabIconDefault }]}>Por: {item.creadoPorNombre}</Text>
-          <Text style={[styles.mensajeFecha, { color: colors.tabIconDefault }]}>
-            {item.fechaCreacion instanceof Date
-              ? item.fechaCreacion.toLocaleDateString("es-ES", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
-              : "Hoy"}
+          <Text style={styles.mensajeAutor}>Por: {item.creadoPorNombre}</Text>
+          <Text style={styles.mensajeFecha}>
+            {item.fechaCreacion?.toDate?.()?.toLocaleDateString() || "Hoy"}
           </Text>
         </View>
 
@@ -344,12 +290,10 @@ export default function MensajesScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
         options={{
           title: "Mensajes",
-          headerStyle: { backgroundColor: colors.card },
-          headerTintColor: colors.text,
           headerRight: () =>
             isAdmin ? (
               <TouchableOpacity
@@ -359,36 +303,36 @@ export default function MensajesScreen() {
                 }}
                 style={styles.addButton}
               >
-                <Plus size={24} color={colors.primary} />
+                <Plus size={24} color="#fff" />
               </TouchableOpacity>
             ) : null,
         }}
       />
 
-      <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
-        <Search size={20} color={colors.tabIconDefault} style={styles.searchIcon} />
+      <View style={styles.searchContainer}>
+        <Search size={20} color="#666" style={styles.searchIcon} />
         <TextInput
-          style={[styles.searchInput, { color: colors.text }]}
+          style={styles.searchInput}
           placeholder="Buscar mensajes..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholderTextColor={colors.tabIconDefault}
+          placeholderTextColor="#999"
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <X size={20} color={colors.tabIconDefault} />
+            <X size={20} color="#666" />
           </TouchableOpacity>
         )}
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color="#007AFF" />
         </View>
       ) : filteredMensajes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <AlertCircle size={64} color={colors.tabIconDefault} />
-          <Text style={[styles.emptyText, { color: colors.tabIconDefault }]}>
+          <AlertCircle size={64} color="#ccc" />
+          <Text style={styles.emptyText}>
             {searchQuery ? "No se encontraron mensajes" : "No hay mensajes"}
           </Text>
         </View>
@@ -410,9 +354,9 @@ export default function MensajesScreen() {
           setModalVisible(false);
         }}
       >
-        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
               {editingMensaje ? "Editar Mensaje" : "Nuevo Mensaje"}
             </Text>
             <TouchableOpacity
@@ -421,39 +365,38 @@ export default function MensajesScreen() {
                 setModalVisible(false);
               }}
             >
-              <X size={24} color={colors.text} />
+              <X size={24} color="#333" />
             </TouchableOpacity>
           </View>
 
           <View style={styles.modalContent}>
-            <Text style={[styles.label, { color: colors.text }]}>Título *</Text>
+            <Text style={styles.label}>Título *</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+              style={styles.input}
               value={formData.titulo}
               onChangeText={(text) => setFormData({ ...formData, titulo: text })}
               placeholder="Título del mensaje"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#999"
             />
 
-            <Text style={[styles.label, { color: colors.text }]}>Contenido *</Text>
+            <Text style={styles.label}>Contenido *</Text>
             <TextInput
-              style={[styles.input, styles.textArea, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+              style={[styles.input, styles.textArea]}
               value={formData.contenido}
               onChangeText={(text) => setFormData({ ...formData, contenido: text })}
               placeholder="Contenido del mensaje"
-              placeholderTextColor={colors.tabIconDefault}
+              placeholderTextColor="#999"
               multiline
               numberOfLines={4}
             />
 
-            <Text style={[styles.label, { color: colors.text }]}>Tipo</Text>
+            <Text style={styles.label}>Tipo</Text>
             <View style={styles.tipoButtons}>
               {(["general", "importante", "urgente"] as const).map((tipo) => (
                 <TouchableOpacity
                   key={tipo}
                   style={[
                     styles.tipoButton,
-                    { backgroundColor: colors.card, borderColor: colors.border },
                     formData.tipo === tipo && {
                       backgroundColor: getTipoColor(tipo),
                     },
@@ -463,7 +406,6 @@ export default function MensajesScreen() {
                   <Text
                     style={[
                       styles.tipoButtonText,
-                      { color: colors.text },
                       formData.tipo === tipo && styles.tipoButtonTextActive,
                     ]}
                   >
@@ -473,9 +415,9 @@ export default function MensajesScreen() {
               ))}
             </View>
 
-            <Text style={[styles.label, { color: colors.text }]}>Imagen (opcional)</Text>
+            <Text style={styles.label}>Imagen (opcional)</Text>
             <TouchableOpacity
-              style={[styles.imageButton, { backgroundColor: colors.primary }]}
+              style={styles.imageButton}
               onPress={handlePickImage}
               disabled={uploading}
             >
@@ -500,7 +442,7 @@ export default function MensajesScreen() {
             )}
 
             <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: colors.primary }, uploading && styles.submitButtonDisabled]}
+              style={[styles.submitButton, uploading && styles.submitButtonDisabled]}
               onPress={handleSubmit}
               disabled={uploading}
             >
@@ -513,15 +455,16 @@ export default function MensajesScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
   },
   addButton: {
     marginRight: 16,
@@ -529,6 +472,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#fff",
     margin: 16,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -551,6 +495,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
+    color: "#333",
   },
   loadingContainer: {
     flex: 1,
@@ -566,6 +511,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     fontSize: 18,
+    color: "#999",
     textAlign: "center",
   },
   listContent: {
@@ -573,6 +519,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   mensajeCard: {
+    backgroundColor: "#fff",
     borderRadius: 12,
     marginBottom: 16,
     overflow: "hidden",
@@ -610,10 +557,12 @@ const styles = StyleSheet.create({
   mensajeTitulo: {
     fontSize: 20,
     fontWeight: "700" as const,
+    color: "#333",
     marginBottom: 8,
   },
   mensajeContenido: {
     fontSize: 16,
+    color: "#666",
     lineHeight: 24,
     marginBottom: 12,
   },
@@ -627,9 +576,11 @@ const styles = StyleSheet.create({
   },
   mensajeAutor: {
     fontSize: 14,
+    color: "#999",
   },
   mensajeFecha: {
     fontSize: 14,
+    color: "#999",
   },
   adminActions: {
     flexDirection: "row",
@@ -668,6 +619,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   modalHeader: {
     flexDirection: "row",
@@ -675,10 +627,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "700" as const,
+    color: "#333",
   },
   modalContent: {
     flex: 1,
@@ -687,14 +641,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600" as const,
+    color: "#333",
     marginBottom: 8,
     marginTop: 16,
   },
   input: {
+    backgroundColor: "#f5f5f5",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    color: "#333",
     borderWidth: 1,
+    borderColor: "#ddd",
   },
   textArea: {
     minHeight: 100,
@@ -708,17 +666,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
+    backgroundColor: "#f5f5f5",
     alignItems: "center",
     borderWidth: 1,
+    borderColor: "#ddd",
   },
   tipoButtonText: {
     fontSize: 14,
     fontWeight: "600" as const,
+    color: "#666",
   },
   tipoButtonTextActive: {
     color: "#fff",
   },
   imageButton: {
+    backgroundColor: "#007AFF",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -746,6 +708,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   submitButton: {
+    backgroundColor: "#007AFF",
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: "center",
