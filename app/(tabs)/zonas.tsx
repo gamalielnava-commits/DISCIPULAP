@@ -16,6 +16,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '@/providers/AppProvider';
 import Colors from '@/constants/colors';
+import AppHeader from '@/components/AppHeader';
+import { Stack } from 'expo-router';
 import { 
   MapPin, 
   Users, 
@@ -373,19 +375,28 @@ export default function ZonasScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          Gestión de Zonas
-        </Text>
-        <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: colors.primary }]}
-          onPress={handleAddZona}
-        >
-          <Plus size={20} color="#fff" />
-          <Text style={styles.addButtonText}>Nueva Zona</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
+      
+      <AppHeader
+        title="Zonas"
+        subtitle="Gestión de zonas y supervisores"
+        rightActions={
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+            onPress={handleAddZona}
+          >
+            <Plus size={20} color="#fff" />
+            <Text style={styles.addButtonText}>Nueva Zona</Text>
+          </TouchableOpacity>
+        }
+      />
+      
+      <SafeAreaView style={[styles.content, { backgroundColor: colors.background }]} edges={["bottom"]}>
 
       <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
         <Search size={20} color={colors.textSecondary} />
@@ -646,7 +657,8 @@ export default function ZonasScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -654,28 +666,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold' as const,
+  content: {
+    flex: 1,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
     gap: 5,
   },
   addButtonText: {
     color: '#fff',
     fontWeight: '600' as const,
+    fontSize: 14,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -693,7 +698,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   zonaCard: {
     marginBottom: 15,

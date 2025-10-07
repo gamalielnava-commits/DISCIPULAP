@@ -219,6 +219,9 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
+            {/* Autenticación con Google y Apple - Deshabilitada temporalmente */}
+            {/* Para habilitar, descomenta este bloque y configura Firebase correctamente */}
+            {/*
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>o continuar con</Text>
@@ -260,6 +263,7 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               )}
             </View>
+            */}
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />

@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { Plus, Search, X, Trash2, Edit, AlertCircle } from "lucide-react-native";
+import AppHeader from "@/components/AppHeader";
 import { db } from "@/services/firebase";
 import {
   collection,
@@ -28,7 +29,7 @@ import {
   updateDoc,
   onSnapshot,
 } from "firebase/firestore";
-import { useAuth } from "@/providers/AppProvider";
+import { useApp } from "@/providers/AppProvider";
 import { uploadImage } from "@/utils/imageUpload";
 import * as ImagePicker from "expo-image-picker";
 
@@ -45,7 +46,7 @@ type Mensaje = {
 };
 
 export default function MensajesScreen() {
-  const { user } = useAuth();
+  const { user } = useApp();
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [filteredMensajes, setFilteredMensajes] = useState<Mensaje[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,10 +97,6 @@ export default function MensajesScreen() {
   }, []);
 
   useEffect(() => {
-    filterMensajes();
-  }, [searchQuery, mensajes]);
-
-  const filterMensajes = () => {
     if (!searchQuery.trim()) {
       setFilteredMensajes(mensajes);
       return;
@@ -113,7 +110,9 @@ export default function MensajesScreen() {
         mensaje.creadoPorNombre.toLowerCase().includes(query)
     );
     setFilteredMensajes(filtered);
-  };
+  }, [searchQuery, mensajes]);
+
+
 
   const handlePickImage = async () => {
     try {
@@ -160,8 +159,8 @@ export default function MensajesScreen() {
         const mensajesRef = collection(db, "mensajes");
         await addDoc(mensajesRef, {
           ...formData,
-          creadoPor: user?.uid || "",
-          creadoPorNombre: user?.displayName || user?.email || "Usuario",
+          creadoPor: user?.id || "",
+          creadoPorNombre: `${user?.nombre || ''} ${user?.apellido || ''}`.trim() || user?.email || "Usuario",
           fechaCreacion: serverTimestamp(),
           activo: true,
         });
@@ -290,24 +289,32 @@ export default function MensajesScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: "Mensajes",
-          headerRight: () =>
-            isAdmin ? (
-              <TouchableOpacity
-                onPress={() => {
-                  resetForm();
-                  setModalVisible(true);
-                }}
-                style={styles.addButton}
-              >
-                <Plus size={24} color="#fff" />
-              </TouchableOpacity>
-            ) : null,
+          headerShown: false,
         }}
       />
+      
+      <AppHeader
+        title="Mensajes"
+        subtitle="Comunicados y anuncios"
+        rightActions={
+          isAdmin ? (
+            <TouchableOpacity
+              onPress={() => {
+                resetForm();
+                setModalVisible(true);
+              }}
+              style={styles.addButton}
+            >
+              <Plus size={24} color="#fff" />
+            </TouchableOpacity>
+          ) : null
+        }
+      />
+      
+      <SafeAreaView style={styles.content} edges={["bottom"]}>
 
       <View style={styles.searchContainer}>
         <Search size={20} color="#666" style={styles.searchIcon} />
@@ -457,7 +464,8 @@ export default function MensajesScreen() {
           </View>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -466,8 +474,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
+  content: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
   addButton: {
-    marginRight: 16,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
   },
   searchContainer: {
     flexDirection: "row",
