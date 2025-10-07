@@ -1,6 +1,5 @@
 import '../firebaseConfig';
-import { testFirebase } from '../testFirebase';
-import { initializeFirestoreStructure } from '../firestoreSetup';
+import { verifyFirebaseConnection } from '../verifyFirebaseConnection';
 import { createAdminUser } from '../createAdmin';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -114,9 +113,13 @@ export default function RootLayout() {
     if (Platform.OS === 'web') {
       SplashScreen.hideAsync().catch(() => {});
     }
-    testFirebase();
-    initializeFirestoreStructure();
-    createAdminUser();
+    
+    const initFirebase = async () => {
+      await verifyFirebaseConnection();
+      await createAdminUser();
+    };
+    
+    initFirebase();
   }, []);
 
   return (
