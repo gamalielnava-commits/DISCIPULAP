@@ -5,30 +5,30 @@ service cloud.firestore {
     
     // Reglas para la colección de usuarios
     match /usuarios/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
       allow create: if true;
     }
     
     // Reglas para la colección de grupos
     match /grupos/{groupId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
     }
     
     // Reglas para la colección de reportes
     match /reportes/{reportId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
     }
     
     // Reglas para la colección de recursos
     match /recursos/{resourceId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
     }
     
     // Reglas para la colección de pruebas (testing)
@@ -38,16 +38,16 @@ service cloud.firestore {
     
     // Reglas para la colección de módulos
     match /modulos/{moduloId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
     }
     
     // Reglas para la colección de mensajes
     match /mensajes/{mensajeId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
     }
     
     // Regla por defecto: denegar todo lo demás
