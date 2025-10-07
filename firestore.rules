@@ -2,61 +2,55 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    
+    // Reglas para la colección de usuarios
+    match /usuarios/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if true;
     }
-
-    // Helper function to check if user is admin
-    function isAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    
+    // Reglas para la colección de grupos
+    match /grupos/{groupId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
     }
-
-    // Helper function to check if user owns the document
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    
+    // Reglas para la colección de reportes
+    match /reportes/{reportId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
     }
-
-    // Users collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+    
+    // Reglas para la colección de recursos
+    match /recursos/{resourceId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
     }
-
-    // Modulos collection
+    
+    // Reglas para la colección de pruebas (testing)
+    match /pruebas/{testId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para la colección de módulos
     match /modulos/{moduloId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
     }
-
-    // Mensajes collection
+    
+    // Reglas para la colección de mensajes
     match /mensajes/{mensajeId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow create: if request.auth != null;
     }
-
-    // Grupos collection
-    match /grupos/{grupoId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Asistencia collection
-    match /asistencia/{asistenciaId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    // Reportes collection
-    match /reportes/{reporteId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    // Default deny all
+    
+    // Regla por defecto: denegar todo lo demás
     match /{document=**} {
       allow read, write: if false;
     }
