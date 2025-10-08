@@ -16,7 +16,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, KeyRound } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
 
@@ -36,7 +36,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const { signIn: firebaseSignIn, signInWithGoogle, signInWithApple } = useFirebaseAuth();
+  const { signIn: firebaseSignIn, signInWithGoogle, signInWithApple, resetPassword } = useFirebaseAuth();
 
   const handleLogin = async () => {
     const id = identifier?.trim() ?? '';
@@ -105,6 +105,10 @@ export default function LoginScreen() {
   const LogoContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
   const FormContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
   const DesktopWrapper = (Platform.OS !== 'web' || isDesktop) ? BlurView : View;
+
+  const [showReset, setShowReset] = useState<boolean>(false);
+  const [resetEmail, setResetEmail] = useState<string>('');
+  const [resetStatus, setResetStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   return (
     <View style={styles.container}>
@@ -201,6 +205,15 @@ export default function LoginScreen() {
                   )}
                 </TouchableOpacity>
               </View>
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => setShowReset(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Olvidé mi contraseña"
+                testID="forgot-password-button"
+              >
+                <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity 
@@ -218,6 +231,49 @@ export default function LoginScreen() {
                 <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
               )}
             </TouchableOpacity>
+
+            {showReset && (
+              <View style={styles.resetContainer}>
+                <Text style={styles.resetTitle}>Recuperar contraseña</Text>
+                <View style={styles.inputContainer}>
+                  <Mail size={20} color="#6B7280" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Tu correo"
+                    placeholderTextColor="#9CA3AF"
+                    value={resetEmail}
+                    onChangeText={setResetEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    testID="reset-email-input"
+                    accessibilityLabel="Correo para recuperación"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.resetButton}
+                  onPress={async () => {
+                    setError('');
+                    setResetStatus('idle');
+                    const result = await resetPassword(resetEmail.trim());
+                    if (result.success) {
+                      setResetStatus('success');
+                    } else {
+                      setResetStatus('error');
+                      setError(result.error ?? 'No se pudo enviar el correo de recuperación');
+                    }
+                  }}
+                  testID="send-reset-button"
+                >
+                  <Text style={styles.resetButtonText}>Enviar enlace</Text>
+                </TouchableOpacity>
+                {resetStatus === 'success' ? (
+                  <Text style={styles.resetInfo}>Te enviamos un correo con instrucciones si el email existe.</Text>
+                ) : null}
+                <TouchableOpacity onPress={() => setShowReset(false)} testID="close-reset">
+                  <Text style={styles.resetCancelText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Autenticación con Google y Apple - Deshabilitada temporalmente */}
             {/* Para habilitar, descomenta este bloque y configura Firebase correctamente */}
@@ -560,4 +616,53 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    color: '#F3F4F6',
+    fontSize: 13,
+    textDecorationLine: 'underline',
+    fontWeight: '600',
+  },
+  resetContainer: {
+    marginTop: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)'
+  },
+  resetTitle: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  resetButton: {
+    marginTop: 12,
+    backgroundColor: '#2563EB',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  resetInfo: {
+    color: '#D1FAE5',
+    marginTop: 8,
+    fontSize: 13,
+  },
+  resetCancelText: {
+    color: '#FCA5A5',
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
+

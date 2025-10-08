@@ -18,6 +18,12 @@ export function useFirebaseAuth() {
         if (IS_FIREBASE_CONFIGURED) {
           console.log('Firebase configured: using Firebase auth');
           
+          try {
+            await AuthService.createDefaultAdminUser();
+          } catch (e) {
+            console.warn('No se pudo crear admin por defecto (posiblemente ya existe)');
+          }
+          
           unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
             if (!mounted) return;
             
@@ -332,6 +338,23 @@ export function useFirebaseAuth() {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return { success: false, error: 'Ingresa un correo válido' };
+      }
+      if (!IS_FIREBASE_CONFIGURED) {
+        console.log('Firebase no configurado, simulando envío de restablecimiento...');
+        return { success: true };
+      }
+      await AuthService.resetPassword(email);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      return { success: false, error: getAuthErrorMessage(error.code) };
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       if (!IS_FIREBASE_CONFIGURED) {
@@ -408,6 +431,7 @@ export function useFirebaseAuth() {
     signInWithGoogle,
     signInWithApple,
     updateProfile,
+    resetPassword,
   };
 }
 

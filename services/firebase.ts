@@ -9,7 +9,8 @@ import {
   OAuthProvider,
   User as FirebaseUser,
   updatePassword,
-  sendEmailVerification
+  sendEmailVerification,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { 
   doc, 
@@ -292,14 +293,16 @@ export class AuthService {
     if (!user || !user.email) throw new Error('Usuario no autenticado');
 
     try {
-      // Reauthenticate on web/mobile by signing in again
       await signInWithEmailAndPassword(auth, user.email, currentPassword);
     } catch (_e) {
       throw new Error('Contraseña actual incorrecta');
     }
 
-    // Update password
     await updatePassword(user, newPassword);
+  }
+
+  static async resetPassword(email: string): Promise<void> {
+    await sendPasswordResetEmail(auth, email);
   }
 
   static onAuthStateChanged(callback: (user: FirebaseUser | null) => void) {
