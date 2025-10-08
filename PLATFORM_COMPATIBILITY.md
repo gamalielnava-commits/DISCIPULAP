@@ -72,18 +72,6 @@ const handleOpenLink = (url: string) => {
 };
 ```
 
-#### 4. Google Sign-In (services/firebase.ts)
-```typescript
-static async signInWithGoogle(): Promise<FirebaseUser | null> {
-  if (Platform.OS === 'web') {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    return result.user;
-  }
-  // Mobile requiere expo-auth-session (no implementado aún)
-  throw new Error('Google Sign-In not implemented for mobile yet');
-}
-```
 
 ## 🎵 Reproducción de Audio en Segundo Plano
 
@@ -196,9 +184,6 @@ La app incluye generación de imágenes con DALL-E 3:
 **Problema**: BlurView no funciona nativamente en Android/Web
 **Solución**: Usar `Platform.OS === 'ios'` para mostrar BlurView solo en iOS
 
-### 2. Google Sign-In en Mobile
-**Problema**: No implementado para iOS/Android
-**Solución**: Funciona solo en Web. Para móvil, usar email/password
 
 ### 3. Reproducción de YouTube en Segundo Plano
 **Problema**: YouTube no permite reproducción en segundo plano por defecto
