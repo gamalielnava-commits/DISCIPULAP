@@ -12,9 +12,16 @@
   external_node_modules = [
     "hono",
     "@hono/trpc-server",
-    "@trpc/*",
+    "@trpc/server",
+    "@trpc/client",
     "superjson",
-    "zod"
+    "zod",
+    "firebase",
+    "@firebase/app",
+    "@firebase/auth",
+    "@firebase/firestore",
+    "@firebase/storage",
+    "firebase-admin"
   ]
   included_files = ["backend/**"]
 
