@@ -310,23 +310,38 @@ export class AuthService {
   }
 
   static async createUserProfile(uid: string, userData: Partial<User>): Promise<void> {
-    const userRef = doc(db, 'users', uid);
-    await setDoc(userRef, userData);
+    try {
+      const userRef = doc(db, 'users', uid);
+      await setDoc(userRef, userData);
+    } catch (e: any) {
+      console.warn('createUserProfile permission or network issue', e?.code || String(e));
+      throw e;
+    }
   }
 
   static async getUserProfile(uid: string): Promise<User | null> {
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    
-    if (userSnap.exists()) {
-      return { id: uid, ...userSnap.data() } as User;
+    try {
+      const userRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        return { id: uid, ...userSnap.data() } as User;
+      }
+      return null;
+    } catch (e: any) {
+      console.warn('getUserProfile permission or network issue', e?.code || String(e));
+      return null;
     }
-    return null;
   }
 
   static async updateUserProfile(uid: string, updates: Partial<User>): Promise<void> {
-    const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, { ...updates, updatedAt: new Date() });
+    try {
+      const userRef = doc(db, 'users', uid);
+      await updateDoc(userRef, { ...updates, updatedAt: new Date() });
+    } catch (e: any) {
+      console.warn('updateUserProfile permission or network issue', e?.code || String(e));
+      throw e;
+    }
   }
 }
 

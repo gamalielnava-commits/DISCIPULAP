@@ -18,12 +18,6 @@ export function useFirebaseAuth() {
         if (IS_FIREBASE_CONFIGURED) {
           console.log('Firebase configured: using Firebase auth');
           
-          try {
-            await AuthService.createDefaultAdminUser();
-          } catch (e) {
-            console.warn('No se pudo crear admin por defecto (posiblemente ya existe)');
-          }
-          
           unsubscribe = AuthService.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
             if (!mounted) return;
             
@@ -41,22 +35,59 @@ export function useFirebaseAuth() {
                     role: 'miembro',
                     status: 'activo',
                   };
-                  await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
-                  const newProfile = await AuthService.getUserProfile(firebaseUser.uid);
-                  if (newProfile && mounted) {
-                    setUser(newProfile);
-                    setIsAuthenticated(true);
+                  try {
+                    await AuthService.createUserProfile(firebaseUser.uid, basicProfile);
+                  } catch (e: any) {
+                    console.warn('No se pudo crear perfil de usuario:', e?.code || String(e));
+                  } finally {
+                    let newProfile: User | null = null;
+                    try {
+                      newProfile = await AuthService.getUserProfile(firebaseUser.uid);
+                    } catch (_err) {
+                      newProfile = null;
+                    }
+                    const fallbackProfile: User = {
+                      id: firebaseUser.uid,
+                      email: firebaseUser.email ?? '',
+                      nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
+                      apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+                      role: 'miembro',
+                      status: 'activo',
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                    } as User;
+                    const profileToUse = (newProfile ?? fallbackProfile) as User;
+                    if (mounted) {
+                      setUser(profileToUse);
+                      setIsAuthenticated(true);
+                    }
                   }
                 }
               } else if (mounted) {
                 setUser(null);
                 setIsAuthenticated(false);
               }
-            } catch (error) {
+            } catch (error: any) {
               console.error('Error in auth state change:', error);
               if (mounted) {
-                setUser(null);
-                setIsAuthenticated(false);
+                if (firebaseUser && (error?.code === 'permission-denied' || error?.code === 'failed-precondition')) {
+                  console.warn('Permisos insuficientes para leer/escribir perfil, continuando como autenticado.');
+                  const fallbackProfile: User = {
+                    id: firebaseUser.uid,
+                    email: firebaseUser.email ?? '',
+                    nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
+                    apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
+                    role: 'miembro',
+                    status: 'activo',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                  } as User;
+                  setUser(fallbackProfile);
+                  setIsAuthenticated(true);
+                } else {
+                  setUser(null);
+                  setIsAuthenticated(false);
+                }
               }
             } finally {
               if (mounted) {
