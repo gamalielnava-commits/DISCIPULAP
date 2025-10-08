@@ -3,10 +3,6 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  signInWithPopup,
-  signInWithCredential,
-  GoogleAuthProvider,
-  OAuthProvider,
   User as FirebaseUser,
   updatePassword,
   sendEmailVerification,
@@ -32,7 +28,7 @@ import {
   getDownloadURL, 
   deleteObject 
 } from 'firebase/storage';
-import { Platform } from 'react-native';
+
 import { auth, db, storage, IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 import { User } from '@/types/auth';
 
@@ -136,153 +132,7 @@ export class AuthService {
     }
   }
 
-  static async signInWithGoogle(): Promise<FirebaseUser | null> {
-    if (Platform.OS === 'web') {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      
-      if (result.user) {
-        const existingProfile = await this.getUserProfile(result.user.uid);
-        if (!existingProfile) {
-          const basicProfile: Partial<User> = {
-            nombre: result.user.displayName?.split(' ')[0] || 'Usuario',
-            apellido: result.user.displayName?.split(' ').slice(1).join(' ') || '',
-            email: result.user.email || '',
-            role: 'miembro',
-            status: 'activo',
-          };
-          await this.createUserProfile(result.user.uid, basicProfile);
-        }
-      }
-      
-      return result.user;
-    } else {
-      const { makeRedirectUri } = await import('expo-auth-session');
-      const { maybeCompleteAuthSession } = await import('expo-web-browser');
-      const { exchangeCodeAsync, AuthRequest } = await import('expo-auth-session');
-      
-      maybeCompleteAuthSession();
-      
-      const redirectUri = makeRedirectUri({
-        scheme: 'discipuladoapp',
-        path: 'redirect'
-      });
-      
-      const discovery = {
-        authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-        tokenEndpoint: 'https://oauth2.googleapis.com/token',
-      };
-      
-      const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
-      
-      const request = new AuthRequest({
-        clientId,
-        scopes: ['openid', 'profile', 'email'],
-        redirectUri,
-      });
-      
-      const result = await request.promptAsync(discovery);
-      
-      if (result.type === 'success') {
-        const { code } = result.params;
-        const tokenResult = await exchangeCodeAsync(
-          {
-            clientId,
-            code,
-            redirectUri,
-            extraParams: {
-              code_verifier: request.codeVerifier || '',
-            },
-          },
-          discovery
-        );
-        
-        const credential = GoogleAuthProvider.credential(
-          tokenResult.idToken,
-          tokenResult.accessToken
-        );
-        
-        const userCredential = await signInWithCredential(auth, credential);
-        
-        if (userCredential.user) {
-          const existingProfile = await this.getUserProfile(userCredential.user.uid);
-          if (!existingProfile) {
-            const basicProfile: Partial<User> = {
-              nombre: userCredential.user.displayName?.split(' ')[0] || 'Usuario',
-              apellido: userCredential.user.displayName?.split(' ').slice(1).join(' ') || '',
-              email: userCredential.user.email || '',
-              role: 'miembro',
-              status: 'activo',
-            };
-            await this.createUserProfile(userCredential.user.uid, basicProfile);
-          }
-        }
-        
-        return userCredential.user;
-      }
-      
-      return null;
-    }
-  }
 
-  static async signInWithApple(): Promise<FirebaseUser | null> {
-    if (Platform.OS === 'ios' || Platform.OS === 'web') {
-      const { signInAsync } = await import('expo-apple-authentication');
-      const crypto = await import('expo-crypto');
-      
-      try {
-        const nonce = crypto.randomUUID();
-        const hashedNonce = await crypto.digestStringAsync(
-          crypto.CryptoDigestAlgorithm.SHA256,
-          nonce
-        );
-        
-        const appleCredential = await signInAsync({
-          requestedScopes: [
-            (await import('expo-apple-authentication')).AppleAuthenticationScope.FULL_NAME,
-            (await import('expo-apple-authentication')).AppleAuthenticationScope.EMAIL,
-          ],
-          nonce: hashedNonce,
-        });
-        
-        const { identityToken } = appleCredential;
-        if (!identityToken) {
-          throw new Error('No se pudo obtener el token de identidad');
-        }
-        
-        const provider = new OAuthProvider('apple.com');
-        const credential = provider.credential({
-          idToken: identityToken,
-          rawNonce: nonce,
-        });
-        
-        const userCredential = await signInWithCredential(auth, credential);
-        
-        if (userCredential.user) {
-          const existingProfile = await this.getUserProfile(userCredential.user.uid);
-          if (!existingProfile) {
-            const basicProfile: Partial<User> = {
-              nombre: appleCredential.fullName?.givenName || userCredential.user.displayName?.split(' ')[0] || 'Usuario',
-              apellido: appleCredential.fullName?.familyName || userCredential.user.displayName?.split(' ').slice(1).join(' ') || '',
-              email: appleCredential.email || userCredential.user.email || '',
-              role: 'miembro',
-              status: 'activo',
-            };
-            await this.createUserProfile(userCredential.user.uid, basicProfile);
-          }
-        }
-        
-        return userCredential.user;
-      } catch (e: any) {
-        if (e.code === 'ERR_REQUEST_CANCELED') {
-          return null;
-        }
-        throw e;
-      }
-    }
-    
-    throw new Error('Apple Sign-In solo está disponible en iOS y web');
-  }
 
   static async signOut(): Promise<void> {
     await signOut(auth);

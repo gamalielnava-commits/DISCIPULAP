@@ -386,57 +386,7 @@ export function useFirebaseAuth() {
     }
   };
 
-  const signInWithGoogle = async () => {
-    try {
-      if (!IS_FIREBASE_CONFIGURED) {
-        return {
-          success: false,
-          error: 'Firebase no está configurado. Por favor configura Firebase para usar Google Sign-In.'
-        };
-      }
 
-      const firebaseUser = await AuthService.signInWithGoogle();
-      if (firebaseUser) {
-        return { success: true };
-      }
-      return { success: false, error: 'No se pudo iniciar sesión con Google' };
-    } catch (error: any) {
-      console.error('Google sign in error:', error);
-      return {
-        success: false,
-        error: getAuthErrorMessage(error.code) || 'Error al iniciar sesión con Google'
-      };
-    }
-  };
-
-  const signInWithApple = async () => {
-    try {
-      if (!IS_FIREBASE_CONFIGURED) {
-        return {
-          success: false,
-          error: 'Firebase no está configurado. Por favor configura Firebase para usar Apple Sign-In.'
-        };
-      }
-
-      const firebaseUser = await AuthService.signInWithApple();
-      if (firebaseUser) {
-        return { success: true };
-      }
-      return { success: false, error: 'No se pudo iniciar sesión con Apple' };
-    } catch (error: any) {
-      console.error('Apple sign in error:', error);
-      if (error.message?.includes('solo está disponible')) {
-        return {
-          success: false,
-          error: error.message
-        };
-      }
-      return {
-        success: false,
-        error: getAuthErrorMessage(error.code) || 'Error al iniciar sesión con Apple'
-      };
-    }
-  };
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user?.id) return { success: false, error: 'Usuario no autenticado' };
@@ -459,8 +409,6 @@ export function useFirebaseAuth() {
     signIn,
     signUp,
     signOut,
-    signInWithGoogle,
-    signInWithApple,
     updateProfile,
     resetPassword,
   };

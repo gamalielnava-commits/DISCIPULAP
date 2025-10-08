@@ -11,12 +11,11 @@ import {
   ActivityIndicator,
   Dimensions,
   ImageBackground,
-  Image,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Mail, Lock, Eye, EyeOff, KeyRound } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 import ChurchLogo from '@/components/ChurchLogo';
 
@@ -36,7 +35,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const { signIn: firebaseSignIn, signInWithGoogle, signInWithApple, resetPassword } = useFirebaseAuth();
+  const { signIn: firebaseSignIn, resetPassword } = useFirebaseAuth();
 
   const handleLogin = async () => {
     const id = identifier?.trim() ?? '';
@@ -64,43 +63,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError('');
 
-    try {
-      const result = await signInWithGoogle();
-      if (result.success) {
-        router.replace('/home');
-      } else {
-        setError(result.error || 'Error al iniciar sesión con Google');
-      }
-    } catch (err) {
-      console.error('Error en Google sign in:', err);
-      setError('Error al iniciar sesión con Google');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const result = await signInWithApple();
-      if (result.success) {
-        router.replace('/home');
-      } else {
-        setError(result.error || 'Error al iniciar sesión con Apple');
-      }
-    } catch (err) {
-      console.error('Error en Apple sign in:', err);
-      setError('Error al iniciar sesión con Apple');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const LogoContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
   const FormContainer = Platform.OS !== 'web' || isDesktop ? BlurView : View;
@@ -275,51 +238,7 @@ export default function LoginScreen() {
               </View>
             )}
 
-            {/* Autenticación con Google y Apple - Deshabilitada temporalmente */}
-            {/* Para habilitar, descomenta este bloque y configura Firebase correctamente */}
-            {/*
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>o continuar con</Text>
-              <View style={styles.dividerLine} />
-            </View>
 
-            <View style={styles.socialButtonsContainer}>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={handleGoogleSignIn}
-                disabled={loading}
-                testID="google-signin-button"
-                accessibilityRole="button"
-                accessibilityLabel="Iniciar sesión con Google"
-              >
-                <Image 
-                  source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg' }}
-                  style={styles.googleIcon}
-                  resizeMode="contain"
-                />
-                <Text style={styles.socialButtonText}>Google</Text>
-              </TouchableOpacity>
-
-              {(Platform.OS === 'ios' || Platform.OS === 'web') && (
-                <TouchableOpacity 
-                  style={styles.socialButton}
-                  onPress={handleAppleSignIn}
-                  disabled={loading}
-                  testID="apple-signin-button"
-                  accessibilityRole="button"
-                  accessibilityLabel="Iniciar sesión con Apple"
-                >
-                  <Image 
-                    source={{ uri: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/apple.svg' }}
-                    style={styles.appleIcon}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.socialButtonText}>Apple</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            */}
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
@@ -571,51 +490,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.3,
   },
-  guestButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  guestButtonText: {
-    color: '#6B7280',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 8,
-  },
-  socialButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    gap: 10,
-  },
-  socialButtonText: {
-    color: '#1F2937',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  googleIcon: {
-    width: 20,
-    height: 20,
-  },
-  appleIcon: {
-    width: 20,
-    height: 20,
-  },
+
   forgotPassword: {
     alignSelf: 'flex-end',
     marginTop: 8,

@@ -12,8 +12,17 @@
   external_node_modules = [
     "firebase-admin",
     "firebase",
-    "@firebase/*"
+    "@firebase/*",
+    "react-native",
+    "expo",
+    "react",
+    "react-dom",
+    "react-native-web",
+    "lucide-react-native",
+    "expo-modules-core",
+    "@react-native-async-storage/async-storage"
   ]
+  included_files = ["backend/**"]
 
 [[redirects]]
   from = "/api/*"
