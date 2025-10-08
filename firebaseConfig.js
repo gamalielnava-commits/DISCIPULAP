@@ -1,18 +1,17 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-const env = process.env || {};
+// Autenticación deshabilitada. Mantén sólo Firestore y Storage.
 
 const firebaseConfig = {
-  apiKey: env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ?? (env.EXPO_PUBLIC_FIREBASE_PROJECT_ID ? `${env.EXPO_PUBLIC_FIREBASE_PROJECT_ID}.firebaseapp.com` : undefined),
-  projectId: env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET ?? (env.EXPO_PUBLIC_FIREBASE_PROJECT_ID ? `${env.EXPO_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com` : undefined),
-  messagingSenderId: env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: 'AIzaSyATOSjjO73YgRz80bBUPa4OK0rEBov0mCU',
+  authDomain: 'discipulapp-8d99c.firebaseapp.com',
+  projectId: 'discipulapp-8d99c',
+  storageBucket: 'discipulapp-8d99c.firebasestorage.app',
+  messagingSenderId: '144673796951',
+  appId: '1:144673796951:web:9cd9e632474fb9dedcc412',
+  measurementId: 'G-65VZ57LGFH',
 };
 
 const app = initializeApp(firebaseConfig);
@@ -20,7 +19,8 @@ const app = initializeApp(firebaseConfig);
 console.log('✅ Firebase conectado:', app.name);
 console.log('📦 Proyecto:', firebaseConfig.projectId);
 
-export const auth = getAuth(app);
+// auth removido intencionalmente
+export const auth = undefined;
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 

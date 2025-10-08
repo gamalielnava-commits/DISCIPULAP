@@ -1,9 +1,8 @@
 import '../firebaseConfig';
 import { IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 import { verifyFirebaseConnection } from '../verifyFirebaseConnection';
-import { createAdminUser } from '../createAdmin';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, useEffect, useRef } from "react";
 import { View, StyleSheet, Platform } from "react-native";
@@ -13,7 +12,6 @@ import { GlobalPlayerProvider } from "@/providers/GlobalPlayerProvider";
 import MiniPlayer from "@/components/MiniPlayer";
 import Colors from "@/constants/colors";
 import { trpc, trpcClient } from "@/lib/trpc";
-import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { useBirthdayNotifications } from "@/hooks/useBirthdayNotifications";
 
 SplashScreen.preventAutoHideAsync().catch((e) => {
@@ -23,27 +21,9 @@ SplashScreen.preventAutoHideAsync().catch((e) => {
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const { isDarkMode, isAuthenticated } = useApp();
-  const { loading } = useFirebaseAuth();
+  const { isDarkMode } = useApp();
   const colors = isDarkMode ? Colors.dark : Colors.light;
-  const router = useRouter();
-  const segments = useSegments();
-  
-  // Redirect logic based on authentication state
-  useEffect(() => {
-    if (loading) return; // Wait for auth to load
-    
-    const inAuthGroup = segments[0] === '(tabs)';
-    
-    if (!isAuthenticated && inAuthGroup) {
-      // User is not authenticated but trying to access protected routes
-      router.replace('/login');
-    } else if (isAuthenticated && !inAuthGroup && segments[0] !== 'modal' && segments[0] !== 'gestion-modulos') {
-      // User is authenticated but not in protected routes (and not in modal or gestion-modulos)
-      router.replace('/home');
-    }
-  }, [isAuthenticated, segments, loading, router]);
-  
+
   return (
     <Stack screenOptions={{ 
       headerBackTitle: "Atrás",
@@ -115,22 +95,15 @@ export default function RootLayout() {
       SplashScreen.hideAsync().catch(() => {});
     }
 
-    const initFirebase = async () => {
-      try {
-        if (!IS_FIREBASE_CONFIGURED) {
-          console.log('Firebase not configured. Skipping connection check and admin creation.');
-          return;
-        }
-        await Promise.race([
-          Promise.all([verifyFirebaseConnection(), createAdminUser()]),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase init timeout')), 5000))
-        ]);
-      } catch (error) {
-        console.log('Firebase initialization skipped or timed out:', error);
-      }
-    };
+    if (!IS_FIREBASE_CONFIGURED) {
+      console.log('Firebase not configured. Skipping connection check.');
+      return;
+    }
 
-    initFirebase();
+    // No bloquear la hidratación ni crear admin. Ejecutar en background.
+    verifyFirebaseConnection().catch((e) => {
+      console.log('verifyFirebaseConnection error', e);
+    });
   }, []);
 
   return (
