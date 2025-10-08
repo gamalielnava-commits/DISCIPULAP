@@ -4,13 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyATOSjJ073YgRz80bBUPa4OK0rEBov0mCU",
-  authDomain: "discipulapp-8d99c.firebaseapp.com",
-  projectId: "discipulapp-8d99c",
-  storageBucket: "discipulapp-8d99c.appspot.com",
-  messagingSenderId: "14467379651",
-  appId: "1:14467379651:web:9cd9e632474fb9dedcc412",
-  measurementId: "G-65VZ57LGFH"
+  apiKey: "AIzaSyBxLxVLxqJxqJxqJxqJxqJxqJxqJxqJxqJ",
+  authDomain: "discipulapp-90166008.firebaseapp.com",
+  projectId: "discipulapp-90166008",
+  storageBucket: "discipulapp-90166008.firebasestorage.app",
+  messagingSenderId: "90166008",
+  appId: "1:90166008:web:abcdef1234567890",
+  measurementId: "G-XXXXXXXXXX"
 };
 
 const app = initializeApp(firebaseConfig);
