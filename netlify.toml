@@ -6,6 +6,21 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["backend/**"]
+  external_node_modules = [
+    "expo-apple-authentication",
+    "react-native",
+    "expo",
+    "react",
+    "react-dom",
+    "react-native-web",
+    "lucide-react-native",
+    "expo-modules-core",
+    "@react-native-async-storage/async-storage"
+  ]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
