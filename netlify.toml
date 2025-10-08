@@ -10,17 +10,11 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = [
-    "firebase-admin",
-    "firebase",
-    "@firebase/*",
-    "react-native",
-    "expo",
-    "react",
-    "react-dom",
-    "react-native-web",
-    "lucide-react-native",
-    "expo-modules-core",
-    "@react-native-async-storage/async-storage"
+    "hono",
+    "@hono/trpc-server",
+    "@trpc/*",
+    "superjson",
+    "zod"
   ]
   included_files = ["backend/**"]
 
