@@ -1,4 +1,5 @@
 import '../firebaseConfig';
+import { IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 import { verifyFirebaseConnection } from '../verifyFirebaseConnection';
 import { createAdminUser } from '../createAdmin';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -113,9 +114,13 @@ export default function RootLayout() {
     if (Platform.OS === 'web') {
       SplashScreen.hideAsync().catch(() => {});
     }
-    
+
     const initFirebase = async () => {
       try {
+        if (!IS_FIREBASE_CONFIGURED) {
+          console.log('Firebase not configured. Skipping connection check and admin creation.');
+          return;
+        }
         await Promise.race([
           Promise.all([verifyFirebaseConnection(), createAdminUser()]),
           new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase init timeout')), 5000))
@@ -124,7 +129,7 @@ export default function RootLayout() {
         console.log('Firebase initialization skipped or timed out:', error);
       }
     };
-    
+
     initFirebase();
   }, []);
 
