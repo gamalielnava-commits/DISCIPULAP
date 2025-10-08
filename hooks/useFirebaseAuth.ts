@@ -333,6 +333,8 @@ export function useFirebaseAuth() {
       return { success: true };
     } catch (error: any) {
       console.error('Sign up error:', error);
+      const errorCode = error?.code ?? '';
+      console.log('Sign up error code:', errorCode);
       if (error.message && error.message.includes('JSON')) {
         return {
           success: false,
@@ -341,7 +343,7 @@ export function useFirebaseAuth() {
       }
       return {
         success: false,
-        error: getAuthErrorMessage(error.code)
+        error: getAuthErrorMessage(errorCode)
       };
     }
   };
@@ -436,6 +438,14 @@ function getAuthErrorMessage(errorCode: string): string {
       return 'Demasiados intentos. Intenta más tarde';
     case 'auth/network-request-failed':
       return 'Error de conexión';
+    case 'auth/operation-not-allowed':
+      return 'Método de autenticación deshabilitado. Activa Email/Password en Firebase.';
+    case 'auth/unauthorized-domain':
+      return 'Dominio no autorizado. Agrega tu dominio (discipulapp.org) en Firebase > Authentication > Settings > Authorized domains.';
+    case 'auth/configuration-not-found':
+      return 'Configuración de autenticación faltante en Firebase.';
+    case 'auth/admin-restricted-operation':
+      return 'Operación restringida por configuración de Firebase.';
     default:
       return 'Error de autenticación';
   }
