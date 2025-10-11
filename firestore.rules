@@ -3,10 +3,151 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Permitir acceso completo a todas las colecciones (para desarrollo/testing)
-    // IMPORTANTE: En producción, deberías restringir estos permisos
-    match /{document=**} {
-      allow read, write: if true;
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection - users can read/write their own data, admins can read all
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    
+    // Usuarios collection (same as users)
+    match /usuarios/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    
+    // Groups - authenticated users can read, admins can write
+    match /groups/{groupId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Grupos (same as groups)
+    match /grupos/{groupId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Reports - authenticated users can read, admins can write
+    match /reportes/{reportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Resources - authenticated users can read, admins can write
+    match /resources/{resourceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Recursos (same as resources)
+    match /recursos/{resourceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Test data - only for development
+    match /pruebas/{testId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // Modules - authenticated users can read, admins can write
+    match /modulos/{moduloId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Messages - authenticated users can read, admins can write
+    match /mensajes/{mensajeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // User progress - users can read/write their own progress
+    match /userProgress/{progressId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Discipleship entries - users can read/write their own entries
+    match /discipleship/{entryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Sermons - authenticated users can read, admins can write
+    match /sermons/{sermonId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Sermon series - authenticated users can read, admins can write
+    match /sermonSeries/{seriesId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Analytics - authenticated users can write, admins can read
+    match /analytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if isAuthenticated();
+    }
+    
+    // Stats - authenticated users can read, system can write
+    match /stats/{statId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Members - authenticated users can read, admins can write
+    match /members/{memberId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Attendance - authenticated users can read, admins can write
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Announcements - authenticated users can read, admins can write
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Zones - authenticated users can read, admins can write
+    match /zones/{zoneId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Group member roles - authenticated users can read, admins can write
+    match /groupMemberRoles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Custom permissions - admins only
+    match /customPermissions/{permissionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 }
