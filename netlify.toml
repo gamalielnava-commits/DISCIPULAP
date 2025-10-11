@@ -33,9 +33,22 @@
     "expo",
     "expo-router",
     "@expo/vector-icons",
-    "@react-navigation/native"
+    "@react-navigation/native",
+    "firebase",
+    "firebase/app",
+    "firebase/auth",
+    "firebase/firestore",
+    "firebase/storage",
+    "firebase-functions",
+    "firebase-functions/v2",
+    "firebase-functions/v2/https"
   ]
-  included_files = ["backend/**"]
+  included_files = [
+    "backend/trpc/**",
+    "backend/firebaseAdmin.ts",
+    "backend/hono.ts"
+  ]
+  ignore_node_modules = false
 
 [[redirects]]
   from = "/api/*"
