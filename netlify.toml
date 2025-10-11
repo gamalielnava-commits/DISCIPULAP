@@ -9,6 +9,7 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["react-native", "lucide-react-native", "expo", "expo-router", "react-native-web", "react-native-svg"]
 
 [[redirects]]
   from = "/api/*"
