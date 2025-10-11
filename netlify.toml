@@ -21,7 +21,8 @@
     "@firebase/auth",
     "@firebase/firestore",
     "@firebase/storage",
-    "firebase-admin"
+    "firebase-admin",
+    "react-native"
   ]
   included_files = ["backend/**"]
 
