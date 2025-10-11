@@ -16,22 +16,18 @@
     "@trpc/client",
     "superjson",
     "zod",
-    "firebase",
-    "firebase/app",
-    "firebase/auth",
-    "firebase/firestore",
-    "firebase/storage",
     "firebase-admin",
-    "react-native",
-    "react-native-web",
-    "react",
-    "react-dom",
-    "expo",
-    "expo-router",
-    "@expo/vector-icons",
-    "@react-navigation/native"
+    "firebase-admin/app",
+    "firebase-admin/auth",
+    "firebase-admin/firestore",
+    "firebase-admin/storage",
+    "@google-cloud/firestore",
+    "@google-cloud/storage",
+    "google-auth-library",
+    "google-gax",
+    "protobufjs"
   ]
-  included_files = ["backend/**"]
+  included_files = ["backend/**", "node_modules/firebase-admin/**"]
 
 [[redirects]]
   from = "/api/*"
