@@ -82,7 +82,7 @@ export class AuthService {
     
     const firstUser = !(await this.hasAnyUser());
     // Check if this is the default admin user
-    const isDefaultAdmin = email === 'admin@gmail.com';
+    const isDefaultAdmin = email === 'admin@gmail.com' || email === 'admin@discipulapp.com';
     const roleToSave = isDefaultAdmin ? 'admin' : (firstUser ? 'admin' : (userData.role ?? 'miembro'));
 
     await this.createUserProfile(userCredential.user.uid, {
@@ -111,7 +111,7 @@ export class AuthService {
     }
     try {
       const usersCol = collection(db, 'users');
-      const qRef = query(usersCol, where('email', '==', 'admin@gmail.com'), limit(1));
+      const qRef = query(usersCol, where('email', '==', 'admin@discipulapp.com'), limit(1));
       const snap = await getDocs(qRef);
       if (!snap.empty) {
         console.log('Default admin user already exists');
@@ -125,7 +125,7 @@ export class AuthService {
         telefono: '000-000-0000',
         fechaNacimiento: '01/01/1980',
       };
-      await this.signUp('admin@gmail.com', '123456', adminData);
+      await this.signUp('admin@discipulapp.com', 'admin123', adminData);
       console.log('Default admin user created successfully');
     } catch (error) {
       console.error('Error creating default admin user:', error);

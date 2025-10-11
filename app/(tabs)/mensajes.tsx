@@ -62,7 +62,7 @@ export default function MensajesScreen() {
     tipo: "general" as "general" | "importante" | "urgente",
   });
 
-  const isAdmin = user?.email === "admin@example.com";
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     const mensajesRef = collection(db, "mensajes");
