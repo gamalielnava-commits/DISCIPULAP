@@ -16,7 +16,15 @@
     "@trpc/client",
     "superjson",
     "zod",
-    "firebase-admin"
+    "firebase-admin",
+    "react-native",
+    "react-native-web",
+    "react",
+    "react-dom",
+    "expo",
+    "expo-router",
+    "@expo/vector-icons",
+    "@react-navigation/native"
   ]
   included_files = ["backend/**"]
 
