@@ -32,7 +32,8 @@ import {
 import { auth, db, storage, IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 import { User } from '@/types/auth';
 
-export { db, auth, storage, IS_FIREBASE_CONFIGURED };
+export { db, storage, IS_FIREBASE_CONFIGURED };
+export { auth };
 
 export const REQUIRE_EMAIL_VERIFICATION = false as const;
 
@@ -144,7 +145,7 @@ export class AuthService {
 
     try {
       await signInWithEmailAndPassword(auth, user.email, currentPassword);
-    } catch (_e) {
+    } catch {
       throw new Error('Contraseña actual incorrecta');
     }
 
