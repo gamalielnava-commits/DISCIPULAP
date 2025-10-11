@@ -9,11 +9,11 @@
 
 [functions]
   node_bundler = "esbuild"
-
-  [functions.ignore_node_modules]
-    external_node_modules = [
-      "react-native"
-    ]
+  external_node_modules = [
+    "react-native",
+    "expo",
+    "react-native-web"
+  ]
 
 [[redirects]]
   from = "/api/*"
