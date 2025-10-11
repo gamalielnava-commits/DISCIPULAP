@@ -28,11 +28,13 @@ export function useFirebaseAuth() {
                   setUser(userProfile);
                   setIsAuthenticated(true);
                 } else if (mounted) {
+                  // Determinar el rol basado en el email
+                  const isDefaultAdmin = firebaseUser.email === 'admin@gmail.com' || firebaseUser.email === 'admin@discipulapp.com';
                   const basicProfile: Partial<User> = {
                     nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
                     apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
                     email: firebaseUser.email || '',
-                    role: 'miembro',
+                    role: isDefaultAdmin ? 'admin' : 'miembro',
                     status: 'activo',
                   };
                   try {
@@ -46,12 +48,14 @@ export function useFirebaseAuth() {
                     } catch (_err) {
                       newProfile = null;
                     }
+                    // Determinar el rol basado en el email
+                    const isDefaultAdmin = firebaseUser.email === 'admin@gmail.com' || firebaseUser.email === 'admin@discipulapp.com';
                     const fallbackProfile: User = {
                       id: firebaseUser.uid,
                       email: firebaseUser.email ?? '',
                       nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
                       apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
-                      role: 'miembro',
+                      role: isDefaultAdmin ? 'admin' : 'miembro',
                       status: 'activo',
                       createdAt: new Date(),
                       updatedAt: new Date(),
@@ -72,12 +76,14 @@ export function useFirebaseAuth() {
               if (mounted) {
                 if (firebaseUser && (error?.code === 'permission-denied' || error?.code === 'failed-precondition')) {
                   console.warn('Permisos insuficientes para leer/escribir perfil, continuando como autenticado.');
+                  // Determinar el rol basado en el email
+                  const isDefaultAdmin = firebaseUser.email === 'admin@gmail.com' || firebaseUser.email === 'admin@discipulapp.com';
                   const fallbackProfile: User = {
                     id: firebaseUser.uid,
                     email: firebaseUser.email ?? '',
                     nombre: firebaseUser.displayName?.split(' ')[0] || 'Usuario',
                     apellido: firebaseUser.displayName?.split(' ').slice(1).join(' ') || '',
-                    role: 'miembro',
+                    role: isDefaultAdmin ? 'admin' : 'miembro',
                     status: 'activo',
                     createdAt: new Date(),
                     updatedAt: new Date(),
