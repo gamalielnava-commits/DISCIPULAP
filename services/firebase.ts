@@ -7,6 +7,7 @@ import {
   updatePassword,
   sendEmailVerification,
   sendPasswordResetEmail,
+  Auth,
 } from 'firebase/auth';
 import { 
   doc, 
@@ -29,10 +30,12 @@ import {
   deleteObject 
 } from 'firebase/storage';
 
-import { auth, db, storage, IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
+import { auth as firebaseAuth, db, storage, IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
 import { User } from '@/types/auth';
 
 export { db, storage, IS_FIREBASE_CONFIGURED };
+
+const auth: Auth = firebaseAuth;
 export { auth };
 
 export const REQUIRE_EMAIL_VERIFICATION = false as const;
