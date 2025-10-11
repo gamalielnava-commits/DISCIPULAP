@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: 'AIzaSyATOSjjO73YgRz80bBUPa4OK0rEBov0mCU',
   authDomain: 'discipulapp-8d99c.firebaseapp.com',
   projectId: 'discipulapp-8d99c',
-  storageBucket: 'discipulapp-8d99c.firebasestorage.app',
+  storageBucket: 'discipulapp-8d99c.appspot.com',
   messagingSenderId: '144673796951',
   appId: '1:144673796951:web:9cd9e632474fb9dedcc412',
   measurementId: 'G-65VZ57LGFH',
