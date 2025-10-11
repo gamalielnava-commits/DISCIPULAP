@@ -16,13 +16,7 @@
     "@trpc/client",
     "superjson",
     "zod",
-    "firebase",
-    "@firebase/app",
-    "@firebase/auth",
-    "@firebase/firestore",
-    "@firebase/storage",
-    "firebase-admin",
-    "react-native"
+    "firebase-admin"
   ]
   included_files = ["backend/**"]
 
