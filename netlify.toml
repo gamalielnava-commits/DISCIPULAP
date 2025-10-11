@@ -48,7 +48,6 @@
     "backend/firebaseAdmin.ts",
     "backend/hono.ts"
   ]
-  ignore_node_modules = false
 
 [[redirects]]
   from = "/api/*"
