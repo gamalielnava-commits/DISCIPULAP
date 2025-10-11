@@ -8,7 +8,12 @@
   SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
 
 [functions]
-  node_bundler = "zisi"
+  node_bundler = "esbuild"
+
+  [functions.ignore_node_modules]
+    external_node_modules = [
+      "react-native"
+    ]
 
 [[redirects]]
   from = "/api/*"
