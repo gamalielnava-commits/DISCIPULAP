@@ -9,45 +9,6 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = [
-    "hono",
-    "@hono/trpc-server",
-    "@trpc/server",
-    "@trpc/client",
-    "superjson",
-    "zod",
-    "firebase-admin",
-    "firebase-admin/app",
-    "firebase-admin/auth",
-    "firebase-admin/firestore",
-    "firebase-admin/storage",
-    "@google-cloud/firestore",
-    "@google-cloud/storage",
-    "google-auth-library",
-    "google-gax",
-    "protobufjs",
-    "react-native",
-    "react-native-web",
-    "react",
-    "react-dom",
-    "expo",
-    "expo-router",
-    "@expo/vector-icons",
-    "@react-navigation/native",
-    "firebase",
-    "firebase/app",
-    "firebase/auth",
-    "firebase/firestore",
-    "firebase/storage",
-    "firebase-functions",
-    "firebase-functions/v2",
-    "firebase-functions/v2/https"
-  ]
-  included_files = [
-    "backend/trpc/**",
-    "backend/firebaseAdmin.ts",
-    "backend/hono.ts"
-  ]
 
 [[redirects]]
   from = "/api/*"
