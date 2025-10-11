@@ -54,6 +54,12 @@ function RootLayoutNav() {
           },
         }} 
       />
+      <Stack.Screen 
+        name="test-firebase" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
     </Stack>
   );
 }
