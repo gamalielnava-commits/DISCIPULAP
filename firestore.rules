@@ -66,6 +66,15 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     
+    // Test collections for connection testing
+    match /test_connection/{docId} {
+      allow read, write: if true;
+    }
+    
+    match /test_write/{docId} {
+      allow read, write: if true;
+    }
+    
     // Modules - authenticated users can read, admins can write
     match /modulos/{moduloId} {
       allow read: if isAuthenticated();
