@@ -1,7 +1,9 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyATOSjjO73YgRz80bBUPa4OK0rEBov0mCU',
@@ -13,7 +15,12 @@ const firebaseConfig = {
   measurementId: 'G-65VZ57LGFH',
 };
 
-const app = initializeApp(firebaseConfig);
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 
 console.log('✅ Firebase conectado:', app.name);
 console.log('📦 Proyecto:', firebaseConfig.projectId);
@@ -21,12 +28,20 @@ console.log('📦 Proyecto:', firebaseConfig.projectId);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-export const auth = getAuth(app);
-if (typeof window !== 'undefined') {
+let auth;
+if (Platform.OS === 'web') {
+  const { getAuth, setPersistence, browserLocalPersistence } = require('firebase/auth');
+  auth = getAuth(app);
   setPersistence(auth, browserLocalPersistence).catch((e) => {
     console.warn('No se pudo establecer persistencia del auth en web:', e?.message || e);
   });
+} else {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
 }
+
+export { auth };
 
 export const IS_FIREBASE_CONFIGURED = Boolean(firebaseConfig?.apiKey && firebaseConfig?.projectId);
 
