@@ -1,6 +1,5 @@
 import '../firebaseConfig';
 import { IS_FIREBASE_CONFIGURED } from '../firebaseConfig';
-import { verifyFirebaseConnection } from '../verifyFirebaseConnection';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -106,10 +105,7 @@ export default function RootLayout() {
       return;
     }
 
-    // No bloquear la hidratación ni crear admin. Ejecutar en background.
-    verifyFirebaseConnection().catch((e) => {
-      console.log('verifyFirebaseConnection error', e);
-    });
+    console.log('Firebase is configured and ready.');
   }, []);
 
   return (
