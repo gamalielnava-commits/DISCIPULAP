@@ -5,6 +5,10 @@ import { cors } from "hono/cors";
 import { appRouter } from "../../backend/trpc/app-router";
 import { createContext } from "../../backend/trpc/create-context";
 
+if (typeof window !== 'undefined') {
+  throw new Error('This module should only run on the server');
+}
+
 const app = new Hono();
 
 app.use("*", cors());

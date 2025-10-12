@@ -28,14 +28,27 @@
     "react-native-svg",
     "react-native-progress",
     "nativewind",
-    "firebase",
-    "@firebase/*",
-    "firebase-admin",
-    "@google-cloud/*"
+    "@google-cloud/*",
+    "gcp-metadata",
+    "google-auth-library",
+    "google-gax",
+    "protobufjs",
+    "firebase-admin"
   ]
 
 [functions."api"]
-  included_files = ["backend/**"]
+  included_files = [
+    "backend/trpc/**",
+    "backend/firebaseAdmin.ts",
+    "backend/hono.ts"
+  ]
+  ignored_node_modules = [
+    "firebase",
+    "@firebase/app",
+    "@firebase/auth",
+    "@firebase/firestore",
+    "@firebase/storage"
+  ]
 
 [[redirects]]
   from = "/api/*"
