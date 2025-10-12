@@ -22,13 +22,23 @@ service cloud.firestore {
     // Users collection - users can read/write their own data, admins can read all
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId) || isAdmin();
+      // Allow users to create their own profile during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Allow users to update their own profile or admins to update any profile
+      allow update: if isOwner(userId) || isAdmin();
+      // Only admins can delete users
+      allow delete: if isAdmin();
     }
     
     // Usuarios collection (same as users)
     match /usuarios/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId) || isAdmin();
+      // Allow users to create their own profile during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Allow users to update their own profile or admins to update any profile
+      allow update: if isOwner(userId) || isAdmin();
+      // Only admins can delete users
+      allow delete: if isAdmin();
     }
     
     // Groups - authenticated users can read, admins can write
