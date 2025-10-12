@@ -335,21 +335,76 @@ export function useFirebaseAuth() {
         return { success: true };
       }
 
-      console.log('Registrando usuario en Firebase:', email);
+      console.log('🔥 Registrando usuario en Firebase:', email);
+      console.log('📋 Datos del usuario:', { ...userData, password: '***' });
+      
       await AuthService.signUp(email, password, userData);
-      console.log('Usuario registrado exitosamente en Firebase');
+      
+      console.log('✅ Usuario registrado exitosamente en Firebase');
       return { success: true };
     } catch (error: any) {
-      console.error('Sign up error:', error);
-      console.error('Error code:', error?.code);
-      console.error('Error message:', error?.message);
+      console.error('❌ Error en registro:', error);
+      console.error('📝 Error code:', error?.code);
+      console.error('📝 Error message:', error?.message);
+      console.error('📝 Error stack:', error?.stack);
       
       const errorCode = error?.code ?? '';
       
+      // Manejar errores específicos de configuración
       if (error.message && error.message.includes('JSON')) {
         return {
           success: false,
           error: 'Error de configuración. Firebase no está configurado correctamente.'
+        };
+      }
+      
+      // Manejar error de método de autenticación deshabilitado
+      if (errorCode === 'auth/operation-not-allowed') {
+        console.error('⚠️ Email/Password no está habilitado en Firebase Console');
+        return {
+          success: false,
+          error: 'El registro está deshabilitado. Por favor, contacta al administrador para habilitar Email/Password en Firebase Console.'
+        };
+      }
+      
+      // Manejar error de email ya en uso
+      if (errorCode === 'auth/email-already-in-use') {
+        return {
+          success: false,
+          error: 'Este correo electrónico ya está registrado. Intenta iniciar sesión o usa otro correo.'
+        };
+      }
+      
+      // Manejar error de contraseña débil
+      if (errorCode === 'auth/weak-password') {
+        return {
+          success: false,
+          error: 'La contraseña es muy débil. Debe tener al menos 6 caracteres.'
+        };
+      }
+      
+      // Manejar error de email inválido
+      if (errorCode === 'auth/invalid-email') {
+        return {
+          success: false,
+          error: 'El correo electrónico no es válido. Verifica el formato.'
+        };
+      }
+      
+      // Manejar error de red
+      if (errorCode === 'auth/network-request-failed') {
+        return {
+          success: false,
+          error: 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente.'
+        };
+      }
+      
+      // Manejar error de dominio no autorizado
+      if (errorCode === 'auth/unauthorized-domain') {
+        console.error('⚠️ Dominio no autorizado en Firebase Console');
+        return {
+          success: false,
+          error: 'Dominio no autorizado. El administrador debe agregar este dominio en Firebase Console → Authentication → Settings → Authorized domains.'
         };
       }
       
