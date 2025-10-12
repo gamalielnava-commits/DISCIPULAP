@@ -335,18 +335,24 @@ export function useFirebaseAuth() {
         return { success: true };
       }
 
+      console.log('Registrando usuario en Firebase:', email);
       await AuthService.signUp(email, password, userData);
+      console.log('Usuario registrado exitosamente en Firebase');
       return { success: true };
     } catch (error: any) {
       console.error('Sign up error:', error);
+      console.error('Error code:', error?.code);
+      console.error('Error message:', error?.message);
+      
       const errorCode = error?.code ?? '';
-      console.log('Sign up error code:', errorCode);
+      
       if (error.message && error.message.includes('JSON')) {
         return {
           success: false,
           error: 'Error de configuración. Firebase no está configurado correctamente.'
         };
       }
+      
       return {
         success: false,
         error: getAuthErrorMessage(errorCode)
