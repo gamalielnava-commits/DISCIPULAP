@@ -26,10 +26,16 @@
     "react-native-screens",
     "react-native-safe-area-context",
     "react-native-svg",
+    "react-native-progress",
     "nativewind",
+    "firebase",
+    "@firebase/*",
     "firebase-admin",
     "@google-cloud/*"
   ]
+
+[functions."api"]
+  included_files = ["backend/**"]
 
 [[redirects]]
   from = "/api/*"
