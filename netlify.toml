@@ -10,6 +10,8 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = [
+    "react",
+    "react-dom",
     "react-native",
     "react-native-*",
     "expo",
@@ -17,12 +19,16 @@
     "@expo/*",
     "react-native-web",
     "@react-native-async-storage/async-storage",
-    "firebase",
-    "firebase-admin",
-    "@firebase/*",
     "@react-navigation/*",
     "@tanstack/*",
-    "lucide-react-native"
+    "lucide-react-native",
+    "react-native-gesture-handler",
+    "react-native-screens",
+    "react-native-safe-area-context",
+    "react-native-svg",
+    "nativewind",
+    "firebase-admin",
+    "@google-cloud/*"
   ]
 
 [[redirects]]
