@@ -12,7 +12,10 @@
   external_node_modules = [
     "react-native",
     "expo",
-    "react-native-web"
+    "react-native-web",
+    "@react-native-async-storage/async-storage",
+    "firebase",
+    "@firebase/auth"
   ]
 
 [[redirects]]

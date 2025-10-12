@@ -25,7 +25,6 @@ console.log('📦 Proyecto:', firebaseConfig.projectId);
 
 export const db: Firestore = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
-
 export const auth: Auth = getAuth(app);
 
 export const IS_FIREBASE_CONFIGURED = Boolean(firebaseConfig?.apiKey && firebaseConfig?.projectId);
