@@ -33,7 +33,10 @@
     "google-auth-library",
     "google-gax",
     "protobufjs",
-    "firebase-admin"
+    "firebase-admin",
+    "@hono/*",
+    "hono",
+    "@trpc/*"
   ]
 
 [functions."api"]
