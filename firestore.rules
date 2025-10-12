@@ -23,6 +23,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       // Allow users to create their own profile during registration
+      // No need to check if document exists since it's being created
       allow create: if isAuthenticated() && request.auth.uid == userId;
       // Allow users to update their own profile or admins to update any profile
       allow update: if isOwner(userId) || isAdmin();
@@ -34,6 +35,7 @@ service cloud.firestore {
     match /usuarios/{userId} {
       allow read: if isAuthenticated();
       // Allow users to create their own profile during registration
+      // No need to check if document exists since it's being created
       allow create: if isAuthenticated() && request.auth.uid == userId;
       // Allow users to update their own profile or admins to update any profile
       allow update: if isOwner(userId) || isAdmin();
