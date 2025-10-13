@@ -41,3 +41,20 @@ yarn-error.*
 *.md
 !README.md
 !PLATFORM_COMPATIBILITY.md
+!GUIA_DESPLIEGUE_FIREBASE.md
+!ACTUALIZAR_CREDENCIALES.md
+!PASOS_SIGUIENTES.md
+!RESUMEN_CONFIGURACION.md
+!COMANDOS_RAPIDOS.md
+!INDICE_DOCUMENTACION.md
+!EMPIEZA_AQUI.md
+
+# Firebase cache
+.firebase/
+
+# Build output
+dist/
+
+# Lock files (se regeneran automáticamente)
+package-lock.json
+bun.lockb
