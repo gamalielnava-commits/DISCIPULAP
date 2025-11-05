@@ -1,7 +1,7 @@
 import { publicProcedure } from "@/backend/trpc/create-context";
-import { ChurchDataService } from "@/services/firebase";
+import { ChurchDataAdminService } from "@/backend/services/firebaseAdmin";
 
 export default publicProcedure.query(async () => {
-  const items = await ChurchDataService.listSermons();
+  const items = await ChurchDataAdminService.listSermons();
   return items;
 });

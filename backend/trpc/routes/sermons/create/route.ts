@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
-import { ChurchDataService } from "@/services/firebase";
+import { ChurchDataAdminService } from "@/backend/services/firebaseAdmin";
 
 export default publicProcedure
   .input(
@@ -17,7 +17,7 @@ export default publicProcedure
     })
   )
   .mutation(async ({ input }) => {
-    const id = await ChurchDataService.createSermon({
+    const id = await ChurchDataAdminService.createSermon({
       title: input.title,
       speaker: input.speaker,
       date: input.date,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
-import { ChurchDataService } from "@/services/firebase";
+import { ChurchDataAdminService } from "@/backend/services/firebaseAdmin";
 
 const schema = z.object({
   userId: z.string(),
@@ -15,6 +15,6 @@ const schema = z.object({
 export default publicProcedure
   .input(schema)
   .mutation(async ({ input }) => {
-    const id = await ChurchDataService.upsertUserProgress(input);
+    const id = await ChurchDataAdminService.upsertUserProgress(input);
     return { id };
   });
