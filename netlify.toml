@@ -6,6 +6,11 @@
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
 
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["expo", "@expo/*", "@react-native/*", "firebase-admin", "@google-cloud/*"]
+  directory = "netlify/functions"
+
 # API routes para tRPC
 [[redirects]]
   from = "/api/*"
