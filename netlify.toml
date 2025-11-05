@@ -1,64 +1,9 @@
 [build]
   command = "npm run build:web"
   publish = "dist"
-  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
-  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
-
-[functions]
-  node_bundler = "esbuild"
-  external_node_modules = [
-    "react",
-    "react-dom",
-    "react-native",
-    "react-native-*",
-    "expo",
-    "expo-*",
-    "@expo/*",
-    "react-native-web",
-    "@react-native-async-storage/async-storage",
-    "@react-navigation/*",
-    "@tanstack/*",
-    "lucide-react-native",
-    "react-native-gesture-handler",
-    "react-native-screens",
-    "react-native-safe-area-context",
-    "react-native-svg",
-    "react-native-progress",
-    "nativewind",
-    "@google-cloud/*",
-    "gcp-metadata",
-    "google-auth-library",
-    "google-gax",
-    "protobufjs",
-    "firebase-admin",
-    "@hono/*",
-    "hono",
-    "@trpc/*"
-  ]
-
-[functions."api"]
-  included_files = [
-    "backend/trpc/**/*.ts",
-    "backend/trpc/**/*.js",
-    "backend/trpc/**/*.json",
-    "backend/firebaseAdmin.ts",
-    "backend/hono.ts"
-  ]
-  ignored_node_modules = [
-    "firebase",
-    "@firebase/app",
-    "@firebase/auth",
-    "@firebase/firestore",
-    "@firebase/storage"
-  ]
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
 
 [[redirects]]
   from = "/*"
