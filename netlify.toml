@@ -41,7 +41,9 @@
 
 [functions."api"]
   included_files = [
-    "backend/trpc/**",
+    "backend/trpc/**/*.ts",
+    "backend/trpc/**/*.js",
+    "backend/trpc/**/*.json",
     "backend/firebaseAdmin.ts",
     "backend/hono.ts"
   ]
