@@ -23,6 +23,32 @@ module.exports = {
           };
         });
         
+        // Stub Firebase client SDK if accidentally imported in server bundle
+        const firebaseClientPkgs = [/^firebase\/(app|auth|firestore|storage)(\/.*)?$/];
+        firebaseClientPkgs.forEach((re) => {
+          build.onResolve({ filter: re }, args => {
+            return { path: args.path, namespace: 'firebase-client-stub' };
+          });
+        });
+        build.onLoad({ filter: /.*/, namespace: 'firebase-client-stub' }, () => {
+          return { contents: 'export default {};', loader: 'js' };
+        });
+
+        // Alias common client files to empty modules in functions
+        const clientFiles = [
+          /(^|\/)firebaseConfig(\.ts|\.js)?$/,
+          /(^|\/)services\/(firebase)(\.ts|\.js)?$/,
+          /(^|\/)hooks\/(useFirebaseAuth)(\.ts|\.js|\.tsx|\.jsx)?$/,
+        ];
+        clientFiles.forEach((re) => {
+          build.onResolve({ filter: re }, args => {
+            return { path: args.path, namespace: 'client-stub' };
+          });
+        });
+        build.onLoad({ filter: /.*/, namespace: 'client-stub' }, () => {
+          return { contents: 'module.exports = {}; export {};', loader: 'js' };
+        });
+        
         // Exclude all Expo packages
         build.onResolve({ filter: /^(expo|@expo\/|@react-native\/|@react-navigation\/|react-native-|@rork\/)/ }, args => {
           return { 
