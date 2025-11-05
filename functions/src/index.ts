@@ -1,10 +1,10 @@
-import { onRequest } from "firebase-functions/v2/https";
+import * as functions from "firebase-functions";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { initializeApp } from "firebase-admin/app";
-import { appRouter } from "./trpc/app-router.js";
-import { createContext } from "./trpc/create-context.js";
+import { appRouter } from "./trpc/app-router";
+import { createContext } from "./trpc/create-context";
 
 initializeApp();
 
@@ -30,24 +30,19 @@ app.get("/", (c) => {
   return c.json({ status: "ok", message: "API is running" });
 });
 
-export const api = onRequest(
-  {
-    region: "us-central1",
-    timeoutSeconds: 60,
-    memory: "512MiB",
-  },
-  async (request: any, response: any) => {
-    const honoResponse = await app.fetch(request.url, {
-      method: request.method,
-      headers: request.headers as HeadersInit,
-      body: request.body ? JSON.stringify(request.body) : undefined,
-    });
+export const api = functions.https.onRequest(async (req, res) => {
+  const url = `${req.protocol}://${req.get('host')}${req.url}`;
+  
+  const honoResponse = await app.fetch(url, {
+    method: req.method,
+    headers: req.headers as any,
+    body: req.body ? JSON.stringify(req.body) : undefined,
+  });
 
-    const body = await honoResponse.text();
-    
-    response
-      .status(honoResponse.status)
-      .set(Object.fromEntries(honoResponse.headers.entries()))
-      .send(body);
-  }
-);
+  const body = await honoResponse.text();
+  
+  res
+    .status(honoResponse.status)
+    .set(Object.fromEntries(honoResponse.headers.entries()))
+    .send(body);
+});
