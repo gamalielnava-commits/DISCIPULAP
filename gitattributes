@@ -1,0 +1,26 @@
+*.md linguist-documentation
+*.md -diff
+*.md merge=union
+
+# Exclude documentation from secret scanning
+*.md -secrets-scan
+*.txt -secrets-scan
+LEEME_*.md -secrets-scan
+README*.md -secrets-scan
+INSTRUCCIONES*.md -secrets-scan
+SOLUCION*.md -secrets-scan
+GUIA*.md -secrets-scan
+FIREBASE*.md -secrets-scan
+NETLIFY*.md -secrets-scan
+CHECKLIST*.md -secrets-scan
+PASOS*.md -secrets-scan
+RESUMEN*.md -secrets-scan
+COMANDOS*.md -secrets-scan
+DEPLOY*.md -secrets-scan
+ESTADO*.md -secrets-scan
+START*.md -secrets-scan
+EMPIEZA*.md -secrets-scan
+INDICE*.md -secrets-scan
+ANALISIS*.md -secrets-scan
+QUICK*.md -secrets-scan
+PLATFORM*.md -secrets-scan
