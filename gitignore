@@ -57,3 +57,11 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# Documentation with sensitive data
+*FIREBASE*.md
+*NETLIFY*.md
+*SOLUCION*.md
+*CREDENCIALES*.md
+*.md.backup
+updateAdminRole.js
