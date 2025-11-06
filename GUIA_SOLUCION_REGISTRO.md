@@ -84,7 +84,7 @@ firebase deploy --only storage
 Verifica que tu archivo `.env` tenga la configuración correcta:
 
 ```bash
-EXPO_PUBLIC_FIREBASE_API_KEY=AIzaSyATOSjjO73YgRz80bBUPa4OK0rEBov0mCU
+EXPO_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_WEB_API_KEY
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=discipulapp-8d99c.firebaseapp.com
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=discipulapp-8d99c
 EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=discipulapp-8d99c.appspot.com

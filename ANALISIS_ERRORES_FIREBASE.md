@@ -89,7 +89,7 @@ const signIn = async (identifier: string, password: string) => {
 #### A. Variables de Entorno
 ```bash
 # .env - Configuración actual
-EXPO_PUBLIC_FIREBASE_API_KEY=AIzaSyATOSjjO73YgRz80bBUPa4OK0rEBov0mCU
+EXPO_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_WEB_API_KEY
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=discipulapp-8d99c
 # ... otras variables
 ```
