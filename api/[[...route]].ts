@@ -1,10 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import app from "../backend/hono";
 
-export const config = {
-  runtime: "nodejs20.x",
-};
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const url = new URL(req.url || '/', `http://${req.headers.host}`);
   const request = new Request(url.toString(), {
