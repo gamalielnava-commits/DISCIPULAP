@@ -5,7 +5,8 @@
   "installCommand": "bun install",
   "functions": {
     "api/**/*.ts": {
-      "runtime": "edge"
+      "runtime": "nodejs20.x",
+      "maxDuration": 30
     }
   },
   "rewrites": [
