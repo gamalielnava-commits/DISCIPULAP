@@ -1,2 +1,0 @@
-# DISCIPULAP
-Created by Rork
